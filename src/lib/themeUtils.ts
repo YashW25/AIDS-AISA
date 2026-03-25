@@ -38,33 +38,33 @@ export interface ThemeConfig {
 
 export const DEFAULT_THEME: ThemeConfig = {
   global: {
-    primary: '#f97316',
-    secondary: '#163562',
-    accent: '#f97316',
-    gold: '#f0c142',
-    textPrimary: '#0e1929',
-    textSecondary: '#526176',
-    linkColor: '#f97316',
-    background: '#fafafa',
-    card: '#ffffff',
-    muted: '#e8ecf0',
-    mutedForeground: '#526176',
-    border: '#ced8e3',
-    gradientFrom: '#0f172a',
-    gradientVia: '#1e3a5f',
-    gradientTo: '#2563eb',
+    primary:        '#dc2626',   // red-600
+    secondary:      '#163562',   // dark navy (contrast panels)
+    accent:         '#dc2626',   // matches primary
+    gold:           '#f0c142',   // awards / badges
+    textPrimary:    '#0e1929',
+    textSecondary:  '#526176',
+    linkColor:      '#dc2626',
+    background:     '#fafafa',
+    card:           '#ffffff',
+    muted:          '#e8ecf0',
+    mutedForeground:'#526176',
+    border:         '#ced8e3',
+    gradientFrom:   '#1a0000',   // near-black red
+    gradientVia:    '#7f1d1d',   // dark red
+    gradientTo:     '#dc2626',   // vivid red
   },
   pages: {
-    home: {},
-    about: {},
-    events: {},
-    team: {},
+    home:    {},
+    about:   {},
+    events:  {},
+    team:    {},
     gallery: {},
     contact: {},
   },
 };
 
-export const THEME_STORAGE_KEY = 'aisa_theme_config';
+export const THEME_STORAGE_KEY = 'aisa_theme_config_v2'; // bumped version clears old orange cache
 
 export function hexToHsl(hex: string): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -154,10 +154,10 @@ export function loadThemeFromStorage(): ThemeConfig {
       return {
         global: { ...DEFAULT_THEME.global, ...parsed.global },
         pages: {
-          home: { ...DEFAULT_THEME.pages.home, ...(parsed.pages?.home || {}) },
-          about: { ...DEFAULT_THEME.pages.about, ...(parsed.pages?.about || {}) },
-          events: { ...DEFAULT_THEME.pages.events, ...(parsed.pages?.events || {}) },
-          team: { ...DEFAULT_THEME.pages.team, ...(parsed.pages?.team || {}) },
+          home:    { ...DEFAULT_THEME.pages.home,    ...(parsed.pages?.home    || {}) },
+          about:   { ...DEFAULT_THEME.pages.about,   ...(parsed.pages?.about   || {}) },
+          events:  { ...DEFAULT_THEME.pages.events,  ...(parsed.pages?.events  || {}) },
+          team:    { ...DEFAULT_THEME.pages.team,    ...(parsed.pages?.team    || {}) },
           gallery: { ...DEFAULT_THEME.pages.gallery, ...(parsed.pages?.gallery || {}) },
           contact: { ...DEFAULT_THEME.pages.contact, ...(parsed.pages?.contact || {}) },
         },

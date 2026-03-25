@@ -93,13 +93,26 @@ export default function ThemeSettingsPage() {
   const { data: dbData } = useQuery({
     queryKey: ['site-settings-theme'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      // Select only 'id' first — always exists regardless of schema migrations
+      const { data: row, error: rowErr } = await (supabase as any)
         .from('site_settings')
-        .select('id, theme_config')
+        .select('id')
         .limit(1)
         .maybeSingle();
-      if (error) { console.error(error); return null; }
-      return data;
+      if (rowErr) { console.error('site_settings fetch error:', rowErr); return null; }
+      if (!row?.id) return null;
+
+      // Try to also read theme_config — may not exist yet if SQL fix hasn't run
+      try {
+        const { data: full } = await (supabase as any)
+          .from('site_settings')
+          .select('id, theme_config')
+          .eq('id', row.id)
+          .single();
+        return full ?? row;
+      } catch {
+        return row; // theme_config column missing — return row with just id
+      }
     },
   });
 
@@ -178,20 +191,27 @@ export default function ThemeSettingsPage() {
 
   const saveMutation = useMutation({
     mutationFn: async (theme: ThemeConfig) => {
-      // Save to localStorage FIRST so navigation always shows the new theme
-      // even if the DB save fails (e.g. theme_config column missing)
+      // Always persist to localStorage first — works even if DB save fails
       saveThemeToStorage(theme);
-      // Notify ThemeProvider in same tab to sync its internal ref
       window.dispatchEvent(new CustomEvent('aisa-theme-change', { detail: theme }));
 
       const themeJson = JSON.stringify(theme);
-      if (dbData?.id) {
+
+      // Fresh lookup of the row id (using only 'id' which always exists)
+      const { data: row } = await (supabase as any)
+        .from('site_settings')
+        .select('id')
+        .limit(1)
+        .maybeSingle();
+
+      if (row?.id) {
         const { error } = await (supabase as any)
           .from('site_settings')
           .update({ theme_config: themeJson })
-          .eq('id', dbData.id);
+          .eq('id', row.id);
         if (error) throw error;
       } else {
+        // No row at all — insert one
         const { error } = await (supabase as any)
           .from('site_settings')
           .insert({ theme_config: themeJson });
@@ -205,9 +225,15 @@ export default function ThemeSettingsPage() {
       setShowConfirm(false);
     },
     onError: (err: Error) => {
-      // localStorage was already saved above — colors will persist on navigation
-      // but DB save failed (likely theme_config column missing — run the SQL fix)
-      toast.error('Colors saved locally but database save failed. Run the SQL fix script to make colors permanent across all browsers.');
+      // localStorage save succeeded — colors apply in this browser.
+      // DB save failed — likely the theme_config column is missing.
+      // Tell user to run: supabase/fix_theme_config.sql
+      const isColumnMissing = err.message?.toLowerCase().includes('does not exist');
+      if (isColumnMissing) {
+        toast.error('Theme saved locally. To save permanently, run supabase/fix_theme_config.sql in your Supabase SQL Editor.');
+      } else {
+        toast.error(`Theme saved locally. DB error: ${err.message}`);
+      }
       setHasUnsaved(false);
       setShowConfirm(false);
     },
