@@ -1,0 +1,108 @@
+{
+  "common": {
+    "home": "Home",
+    "about": "About Us",
+    "aboutClub": "About AISA Club",
+    "partners": "Our Partners",
+    "events": "Events",
+    "team": "Team",
+    "gallery": "Gallery",
+    "contact": "Contact Us",
+    "download": "Download",
+    "certificates": "Certificates",
+    "charter": "Charter",
+    "notice": "Notice",
+    "downloads": "Downloads",
+    "login": "Login",
+    "logout": "Logout",
+    "account": "Account",
+    "adminPanel": "Admin Panel",
+    "myDashboard": "My Dashboard",
+    "viewMore": "View More",
+    "learnMore": "Learn More",
+    "exploreEvents": "Explore Events",
+    "register": "Register",
+    "details": "Details",
+    "free": "FREE",
+    "loading": "Loading...",
+    "noData": "No data found"
+  },
+  "hero": {
+    "badge": "AISA Club",
+    "defaultTitle": "Artificial Intelligence and Data Science Students Association",
+    "defaultSubtitle": "Empowering future tech leaders through innovation, collaboration, and excellence in AI and Data Science education."
+  },
+  "home": {
+    "statsTitle": "Our Impact in Numbers",
+    "statsSubtitle": "Building a strong community of AI & DS students through meaningful engagement and growth",
+    "featuresTitle": "Why Choose Us?",
+    "featuresSubtitle": "Excellence in education, innovation in practice, and commitment to student success",
+    "partnersTitle": "Our Trusted Partners",
+    "partnersSubtitle": "Collaborating with industry leaders to bring you the best opportunities",
+    "alumniTitle": "Our Alumni Network",
+    "alumniSubtitle": "Hear from our successful alumni who are making their mark in the industry",
+    "ctaTitle": "Ready to Join Us?",
+    "ctaSubtitle": "Become a part of our vibrant community and unlock opportunities for growth, learning, and networking.",
+    "ctaButton": "Get Started Today"
+  },
+  "events": {
+    "pageTitle": "Our Events",
+    "pageSubtitle": "Join us for exciting technical events, workshops, hackathons, and networking opportunities",
+    "upcoming": "Upcoming Events",
+    "past": "Past Events",
+    "noUpcoming": "No upcoming events found",
+    "noPast": "No past events found",
+    "checkBack": "Check back soon for new events!",
+    "participants": "Participants",
+    "allEvents": "All Events"
+  },
+  "team": {
+    "pageTitle": "Our Team",
+    "pageSubtitle": "Meet the dedicated individuals who make AISA Club a vibrant and successful organization",
+    "faculty": "Faculty Coordinator",
+    "core": "Core Team",
+    "technical": "Technical Team",
+    "media": "Media Team",
+    "cultural": "Cultural Team",
+    "sports": "Sports Team",
+    "noMembers": "No team members found"
+  },
+  "gallery": {
+    "pageTitle": "Gallery",
+    "pageSubtitle": "Capturing moments of learning, collaboration, and celebration",
+    "all": "All",
+    "general": "General",
+    "events": "Events",
+    "clickToExplore": "Click to explore",
+    "backToGalleries": "Back to galleries",
+    "noGalleries": "No galleries yet",
+    "noOccasions": "No occasions yet",
+    "noEventGalleries": "No event galleries yet"
+  },
+  "contact": {
+    "pageTitle": "Contact Us",
+    "pageSubtitle": "Have questions? We would love to hear from you.",
+    "getInTouch": "Get in Touch",
+    "sendMessage": "Send us a Message",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send Message",
+    "address": "Address",
+    "phone": "Phone",
+    "followUs": "Follow Us"
+  },
+  "footer": {
+    "quickLinks": "Quick Links",
+    "resources": "Resources",
+    "contactUs": "Contact Us",
+    "socialMedia": "Social Media",
+    "copyright": "© {{year}} {{clubName}} | Developed by"
+  },
+  "language": {
+    "english": "English",
+    "hindi": "हिंदी",
+    "marathi": "मराठी"
+  }
+}
