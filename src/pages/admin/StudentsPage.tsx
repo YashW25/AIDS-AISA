@@ -158,6 +158,14 @@ export default function StudentsPage() {
   const handleTransferToAlumni = async (student: Student) => {
     setTransferring(true);
     try {
+      // Get current max alumni position so new entry goes after all existing ones
+      const { data: existingAlumni } = await (supabase as any)
+        .from('alumni')
+        .select('position');
+      const maxPos = existingAlumni && existingAlumni.length > 0
+        ? Math.max(...existingAlumni.map((a: any) => a.position ?? 0))
+        : 3;
+
       const { error: alumniError } = await (supabase as any).from('alumni').insert({
         name: student.full_name,
         graduation_year: student.graduation_year,
@@ -168,7 +176,7 @@ export default function StudentsPage() {
         job_title: null,
         testimonial: null,
         is_active: true,
-        position: student.position ?? 0,
+        position: maxPos + 1,
       });
       if (alumniError) throw alumniError;
       const { error: updateError } = await (supabase as any)
@@ -192,7 +200,15 @@ export default function StudentsPage() {
     if (!toTransfer.length) return;
     setTransferring(true);
     try {
-      const alumniRows = toTransfer.map(s => ({
+      // Get current max alumni position so bulk entries go after all existing ones
+      const { data: existingAlumni } = await (supabase as any)
+        .from('alumni')
+        .select('position');
+      const maxPos = existingAlumni && existingAlumni.length > 0
+        ? Math.max(...existingAlumni.map((a: any) => a.position ?? 0))
+        : 3;
+
+      const alumniRows = toTransfer.map((s, idx) => ({
         name: s.full_name,
         graduation_year: s.graduation_year,
         branch: s.branch || 'AI & DS',
@@ -202,7 +218,7 @@ export default function StudentsPage() {
         job_title: null,
         testimonial: null,
         is_active: true,
-        position: s.position ?? 0,
+        position: maxPos + 1 + idx,  // sequential: maxPos+1, maxPos+2, ...
       }));
       const { error: alumniError } = await (supabase as any).from('alumni').insert(alumniRows);
       if (alumniError) throw alumniError;

@@ -36,6 +36,12 @@ export default function AlumniPage() {
 
   const { register, handleSubmit, reset, control, formState: { errors } } = useForm<Alumni>();
 
+  const nextPosition = () => {
+    if (!alumni || alumni.length === 0) return 4;
+    const max = Math.max(...alumni.map((a) => a.position ?? 0));
+    return max + 1;
+  };
+
   const openModal = (item?: Alumni) => {
     if (item) {
       setEditingItem(item);
@@ -51,7 +57,7 @@ export default function AlumniPage() {
         image_url: '',
         linkedin_url: '',
         testimonial: '',
-        position: 0,
+        position: nextPosition(),
       });
     }
     setModalOpen(true);
@@ -166,7 +172,7 @@ export default function AlumniPage() {
               <Label htmlFor="position">Position</Label>
               <Input id="position" type="number" {...register('position', { valueAsNumber: true })} placeholder="e.g. 1" />
               <p className="text-xs text-muted-foreground">
-                Set <strong>1, 2, or 3</strong> to feature this alumni on the homepage. Others won't appear there.
+                Auto-assigned to next available slot. Set <strong>1, 2, or 3</strong> to feature on the homepage — any other number stays off the homepage.
               </p>
             </div>
           </div>
