@@ -26,7 +26,7 @@ export const useAnnouncements = () => {
         .from('announcements')
         .select('*')
         .eq('is_active', true)
-        .order('position', { ascending: true });
+        .order('position', { ascending: false });
       if (error) throw error;
       return data as Announcement[];
     },

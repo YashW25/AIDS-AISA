@@ -93,6 +93,7 @@ const AnnouncementsPage = () => {
               {...register('position', { valueAsNumber: true })}
               placeholder="0"
             />
+            <p className="text-xs text-muted-foreground">Higher number = appears first in the marquee</p>
           </div>
           <div className="flex justify-end gap-4">
             <Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
