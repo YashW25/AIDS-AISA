@@ -28,7 +28,10 @@ const CharterPage = () => {
         .select('*')
         .limit(1)
         .maybeSingle();
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching charter settings:', error);
+        return null;
+      }
       return data;
     },
   });
@@ -47,11 +50,18 @@ const CharterPage = () => {
 
   const updateMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const { error } = await supabase
-        .from('charter_settings')
-        .update(data)
-        .eq('id', charter?.id);
-      if (error) throw error;
+      if (charter?.id) {
+        const { error } = await supabase
+          .from('charter_settings')
+          .update(data)
+          .eq('id', charter.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('charter_settings')
+          .insert(data as any);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['charter-settings'] });

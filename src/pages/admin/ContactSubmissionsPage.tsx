@@ -71,8 +71,11 @@ const ContactSubmissionsPage = () => {
         .from('contact_submissions')
         .select('*')
         .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data as ContactSubmission[];
+      if (error) {
+        console.error('Error fetching contact submissions:', error);
+        return [] as ContactSubmission[];
+      }
+      return (data || []) as ContactSubmission[];
     },
   });
 
@@ -108,11 +111,11 @@ const ContactSubmissionsPage = () => {
 
   const filtered = submissions.filter((s) => {
     const matchesSearch = searchQuery === '' ||
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.subject.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || s.priority === priorityFilter;
+      s.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (s.subject || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || (s.status || 'open') === statusFilter;
+    const matchesPriority = priorityFilter === 'all' || (s.priority || 'medium') === priorityFilter;
     return matchesSearch && matchesStatus && matchesPriority;
   });
 

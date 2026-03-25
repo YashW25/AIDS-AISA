@@ -61,7 +61,10 @@ const RegistrationsPage = () => {
         .from('events')
         .select('id, title')
         .order('event_date', { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching events:', error);
+        return [] as EventOption[];
+      }
       return data;
     },
   });
@@ -77,9 +80,14 @@ const RegistrationsPage = () => {
           payments (id, amount, payment_method, payment_status, transaction_id, receipt_number)
         `)
         .order('created_at', { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching registrations:', error);
+        return [] as Registration[];
+      }
       
       const userIds = [...new Set(data.map(r => r.user_id))];
+      if (userIds.length === 0) return [] as Registration[];
+      
       const { data: profiles } = await supabase
         .from('user_profiles')
         .select('user_id, full_name, mobile, enrollment_number, branch, college, year')

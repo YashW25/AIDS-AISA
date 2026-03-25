@@ -3,6 +3,108 @@
 -- Run this in your Supabase SQL Editor
 -- =====================================================
 
+-- =====================================================
+-- TABLE SCHEMA FIXES
+-- =====================================================
+
+-- 0. Fix missing columns in contact_submissions (critical - breaks contact form!)
+ALTER TABLE public.contact_submissions ADD COLUMN IF NOT EXISTS subject TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.contact_submissions ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'open';
+ALTER TABLE public.contact_submissions ADD COLUMN IF NOT EXISTS priority TEXT NOT NULL DEFAULT 'medium';
+ALTER TABLE public.contact_submissions ADD COLUMN IF NOT EXISTS admin_notes TEXT;
+ALTER TABLE public.contact_submissions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+
+-- 0a. Create charter_settings table if not exists
+CREATE TABLE IF NOT EXISTS public.charter_settings (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL DEFAULT 'AISA Charter',
+    description TEXT,
+    file_url TEXT,
+    drive_url TEXT,
+    file_type TEXT DEFAULT 'pdf',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.charter_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can read charter" ON public.charter_settings;
+CREATE POLICY "Public can read charter" ON public.charter_settings FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins can manage charter" ON public.charter_settings;
+CREATE POLICY "Admins can manage charter" ON public.charter_settings FOR ALL USING (auth.role() = 'authenticated');
+INSERT INTO public.charter_settings (title, description)
+SELECT 'AISA Charter', 'Official AISA Club Charter Document'
+WHERE NOT EXISTS (SELECT 1 FROM public.charter_settings);
+
+-- 0b. Create custom_pages table if not exists
+CREATE TABLE IF NOT EXISTS public.custom_pages (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    content TEXT,
+    meta_description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.custom_pages ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can read active custom pages" ON public.custom_pages;
+CREATE POLICY "Public can read active custom pages" ON public.custom_pages FOR SELECT USING (is_active = true);
+DROP POLICY IF EXISTS "Admins can manage custom pages" ON public.custom_pages;
+CREATE POLICY "Admins can manage custom pages" ON public.custom_pages FOR ALL USING (auth.role() = 'authenticated');
+
+-- 0c. Create nav_items table if not exists
+CREATE TABLE IF NOT EXISTS public.nav_items (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    label TEXT NOT NULL,
+    href TEXT NOT NULL,
+    icon TEXT,
+    parent_id UUID REFERENCES public.nav_items(id),
+    page_type TEXT NOT NULL DEFAULT 'built_in',
+    custom_page_id UUID REFERENCES public.custom_pages(id) ON DELETE SET NULL,
+    position INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    is_visible BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.nav_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can read nav items" ON public.nav_items;
+CREATE POLICY "Public can read nav items" ON public.nav_items FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins can manage nav items" ON public.nav_items;
+CREATE POLICY "Admins can manage nav items" ON public.nav_items FOR ALL USING (auth.role() = 'authenticated');
+
+-- 0d. Create certificate_templates table if not exists
+CREATE TABLE IF NOT EXISTS public.certificate_templates (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    template_name TEXT NOT NULL,
+    template_url TEXT,
+    event_id UUID REFERENCES public.events(id) ON DELETE SET NULL,
+    is_active BOOLEAN DEFAULT true,
+    font_size INTEGER DEFAULT 36,
+    font_color TEXT DEFAULT '#000000',
+    name_position_x DECIMAL DEFAULT 50,
+    name_position_y DECIMAL DEFAULT 50,
+    date_position_x DECIMAL DEFAULT 50,
+    date_position_y DECIMAL DEFAULT 60,
+    cert_number_position_x DECIMAL DEFAULT 50,
+    cert_number_position_y DECIMAL DEFAULT 70,
+    qr_position_x DECIMAL DEFAULT 85,
+    qr_position_y DECIMAL DEFAULT 85,
+    rank_position_x DECIMAL DEFAULT 50,
+    rank_position_y DECIMAL DEFAULT 55,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.certificate_templates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can read certificate templates" ON public.certificate_templates;
+CREATE POLICY "Public can read certificate templates" ON public.certificate_templates FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins can manage certificate templates" ON public.certificate_templates;
+CREATE POLICY "Admins can manage certificate templates" ON public.certificate_templates FOR ALL USING (auth.role() = 'authenticated');
+
+-- 0e. Add missing columns to club_admins if not exists
+ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'admin';
+ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+
 -- 1. Fix missing columns in alumni table
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;

@@ -21,7 +21,10 @@ export function useCustomPages() {
         .from('custom_pages')
         .select('*')
         .order('created_at', { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching custom pages:', error);
+        return [] as CustomPage[];
+      }
       return data as CustomPage[];
     },
   });
@@ -36,7 +39,10 @@ export function useCustomPageBySlug(slug: string) {
         .select('*')
         .eq('slug', slug)
         .single();
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching custom page:', error);
+        return null as unknown as CustomPage;
+      }
       return data as CustomPage;
     },
     enabled: !!slug,

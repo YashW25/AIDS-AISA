@@ -11,8 +11,20 @@ export const useAdminFetch = <T>(table: string, queryKey: string, orderBy: strin
         .from(table)
         .select('*')
         .order(orderBy, { ascending });
-      if (error) throw error;
-      return data as T[];
+      if (error) {
+        // If ordering by position fails (column missing), try without ordering
+        if (error.code === '42703' || error.message?.includes('does not exist')) {
+          const fallback = await (supabase as any).from(table).select('*');
+          if (fallback.error) {
+            console.error(`Error fetching ${table}:`, fallback.error);
+            return [] as T[];
+          }
+          return (fallback.data || []) as T[];
+        }
+        console.error(`Error fetching ${table}:`, error);
+        return [] as T[];
+      }
+      return (data || []) as T[];
     },
   });
 };
@@ -97,7 +109,10 @@ export const useAdmins = () => {
         .from('club_admins')
         .select('*')
         .order('created_at', { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching admins:', error);
+        return [] as any[];
+      }
       return data;
     },
   });
@@ -112,7 +127,10 @@ export const useAdminProfiles = () => {
         .from('admin_profiles')
         .select('*')
         .order('created_at', { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching admin profiles:', error);
+        return [] as any[];
+      }
       return data;
     },
   });
@@ -138,7 +156,10 @@ export const useEventRegistrations = (eventId?: string) => {
       query = query.order('created_at', { ascending: false });
       
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching event registrations:', error);
+        return [] as any[];
+      }
       return data;
     },
   });
@@ -158,7 +179,10 @@ export const useCertificates = () => {
         `)
         .order('issued_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching certificates:', error);
+        return [] as any[];
+      }
       return data;
     },
   });
