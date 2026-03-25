@@ -1,0 +1,189 @@
+You are a senior full-stack engineer, system architect, and production debugger.
+
+I have a large React + Supabase project with:
+
+* Many pages (some used, some unused, some partially implemented)
+* Admin dashboard
+* Public website
+* Supabase database + storage
+
+IMPORTANT:
+Do NOT assume page names. You must DISCOVER everything automatically.
+
+---
+
+## 🔍 STEP 1: AUTO DISCOVER ALL PAGES
+
+* Scan the entire codebase:
+
+  * /pages
+  * /components
+  * /routes
+  * router configuration (React Router)
+
+* Identify:
+
+  * All existing routes (used + unused)
+  * Hidden pages not linked in navbar
+  * Pages that exist but are not rendered
+  * Dead components
+
+* Output a list:
+  ✅ Active pages
+  ❌ Broken pages
+  ⚠️ Unused pages
+
+---
+
+## 🧠 STEP 2: RENDER & CRASH DETECTION
+
+* Simulate rendering each page
+
+* Detect:
+
+  * Blank screens
+  * React crashes
+  * Console errors
+  * Infinite loading states
+
+* Fix:
+
+  * .map() on undefined
+  * null/undefined handling
+  * missing props
+  * broken state
+
+---
+
+## 🗄️ STEP 3: DATABASE AUTO-MAPPING
+
+* Scan ALL Supabase queries in code:
+
+  * .from("table")
+  * RPC calls
+  * storage usage
+
+* Extract:
+
+  * All table names used
+  * All columns referenced
+
+* Compare with actual database:
+
+  * Identify missing tables
+  * Identify missing columns
+  * Identify wrong column names
+
+---
+
+## 📦 STEP 4: GENERATE FULL DATABASE SCHEMA
+
+Generate COMPLETE SQL:
+
+* Include ALL tables used anywhere in project
+
+* For EACH table:
+
+  * Include ALL columns
+  * Correct data types
+  * Default values
+  * Constraints (PK, FK)
+  * Relationships
+
+* Ensure:
+
+  * No missing tables
+  * No missing columns
+  * No type mismatches
+
+IMPORTANT:
+Do NOT give partial schema.
+Give FULL production-ready SQL.
+
+---
+
+## 🔄 STEP 5: ADMIN → FRONTEND SYNC ENGINE
+
+Fix the biggest issue:
+
+Admin adds data → must appear on frontend
+
+* Ensure:
+
+  * Correct queries
+  * Correct filters
+  * No accidental hiding (is_active issues)
+  * Proper ordering & visibility
+
+---
+
+## ⚙️ STEP 6: API & QUERY VALIDATION
+
+* Fix all:
+
+  * 404 errors (wrong tables)
+  * 400 errors (bad filters)
+  * RPC issues
+* Ensure all queries match DB exactly
+
+---
+
+## 🪣 STEP 7: STORAGE (IMAGE SYSTEM)
+
+* Fix upload + display pipeline:
+
+  * Upload → DB → frontend display
+* Ensure:
+
+  * Correct bucket
+  * Public URLs working
+  * No broken images
+
+---
+
+## 🔐 STEP 8: RLS + ACCESS CONTROL
+
+* For development:
+
+  * Remove all blocking policies
+* For production:
+
+  * Suggest secure policies
+
+---
+
+## 🧪 STEP 9: FULL SYSTEM TEST
+
+Simulate complete flow:
+
+Admin Panel →
+Create data →
+Store in DB →
+Fetch on frontend →
+Render correctly
+
+Everything must work end-to-end.
+
+---
+
+## 📊 STEP 10: OUTPUT (STRICT)
+
+Provide:
+
+1. ✅ FULL SQL (ALL tables + ALL columns)
+2. ✅ FIXED React code (only where needed)
+3. ✅ LIST of all broken features found
+4. ✅ LIST of missing tables & columns
+5. ✅ LIST of unused pages/components
+6. ✅ FINAL working architecture
+
+---
+
+## 🚨 STRICT RULES
+
+* Do NOT skip anything
+* Do NOT assume anything
+* Discover everything automatically
+* Be extremely detailed
+* Treat this like a production SaaS system
+* Fix root causes, not symptoms

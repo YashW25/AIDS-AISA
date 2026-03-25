@@ -42,12 +42,54 @@ Runs on port 5000. The workflow "Start application" handles this automatically.
 
 ## Database
 
-All database tables are managed in the connected Supabase project. Migrations are in `supabase/migrations/`. The schema includes:
-- Site settings, announcements, hero slides
-- Events, team members, gallery, alumni
-- User profiles, authentication roles
-- Admin system with multi-club support
-- Certificates, payments, event registrations
+All database tables are managed in the connected Supabase project. Migrations are in `supabase/migrations/`. **The primary setup script is `supabase/fix_and_seed.sql` — run this in the Supabase SQL Editor first.**
+
+### Complete Table List (all used by the code)
+
+| Table | Purpose |
+|-------|---------|
+| `site_settings` | Global site config (name, logo, social links, theme_config) |
+| `hero_slides` | Home page hero carousel slides |
+| `about_features` | About page feature cards |
+| `stats` | Home page stat counters |
+| `announcements` | Scrolling ticker announcements |
+| `events` | Club events (upcoming + past) |
+| `team_members` | Team page members |
+| `team_categories` | Team grouping categories |
+| `gallery` | Photo gallery |
+| `alumni` | Alumni showcase |
+| `partners` | Partner/sponsor logos |
+| `occasions` | Special occasions for gallery grouping |
+| `news` | Notice board items |
+| `downloads` | Downloadable resources |
+| `popup_announcements` | Modal announcement popups |
+| `charter_settings` | Club charter/constitution |
+| `custom_pages` | Admin-created dynamic pages |
+| `nav_items` | Navigation menu items |
+| `contact_submissions` | Contact form submissions |
+| `club_admins` | Admin user management |
+| `admin_profiles` | Legacy admin profiles |
+| `user_profiles` | User profile data |
+| `user_roles` | User permission roles |
+| `event_registrations` | Event participant registrations |
+| `payments` | Payment records |
+| `certificates` | Issued certificates |
+| `certificate_templates` | Certificate design templates |
+| `event_winners` | Event competition results |
+| `visitor_counter` | Site visitor count |
+| `quick_links` | Quick navigation links |
+
+### DB Setup Order
+1. Run `supabase/fix_and_seed.sql` in Supabase SQL Editor (safe to re-run)
+2. Go to `/admin/dashboard/setup` to seed initial content via the admin panel
+
+### Key Column Facts (to avoid schema mismatches)
+- `alumni` columns: `name, graduation_year (TEXT), branch, company, job_title, image_url, linkedin_url, testimonial, is_active, position`
+- `occasions` columns: `title, description, occasion_date (DATE), category, cover_image_url, drive_folder_link, is_active, position`
+- `nav_items` uses `href` (not `url`) for the path column
+- `popup_announcements` uses `link_url`, `link_text` (not `button_text`, `button_link`)
+- `news` includes `attachment_type`, `expire_date` columns
+- `downloads` includes `category` column
 
 ## Supabase Edge Functions
 

@@ -9,8 +9,148 @@ type SeedResult = { table: string; status: 'success' | 'error' | 'skipped'; mess
 
 const SEED_SQL = `-- Run this in Supabase SQL Editor (Database > SQL Editor)
 -- =====================================================
--- AISA Club - Complete Schema Fix
+-- AISA Club - Complete Schema Fix (Safe to re-run)
 -- =====================================================
+
+-- =====================================================
+-- STEP 0: CREATE CORE TABLES FIRST (before any ALTER TABLE)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS public.site_settings (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    club_name TEXT DEFAULT 'AISA', club_full_name TEXT, college_name TEXT,
+    logo_url TEXT, tagline TEXT, email TEXT, phone TEXT, address TEXT,
+    facebook_url TEXT, instagram_url TEXT, linkedin_url TEXT, youtube_url TEXT,
+    twitter_url TEXT, theme_config TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.hero_slides (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL, subtitle TEXT, image_url TEXT, button_text TEXT, button_link TEXT,
+    position INTEGER DEFAULT 0, is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.hero_slides ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read hero_slides" ON public.hero_slides;
+CREATE POLICY "Allow public read hero_slides" ON public.hero_slides FOR SELECT USING (true);
+
+CREATE TABLE IF NOT EXISTS public.about_features (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL, description TEXT, icon TEXT,
+    position INTEGER DEFAULT 0, is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.about_features ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read about_features" ON public.about_features;
+CREATE POLICY "Allow public read about_features" ON public.about_features FOR SELECT USING (true);
+
+CREATE TABLE IF NOT EXISTS public.stats (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    label TEXT NOT NULL, value TEXT NOT NULL, icon TEXT,
+    position INTEGER DEFAULT 0, is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.stats ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read stats" ON public.stats;
+CREATE POLICY "Allow public read stats" ON public.stats FOR SELECT USING (true);
+
+CREATE TABLE IF NOT EXISTS public.partners (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    name TEXT NOT NULL, logo_url TEXT, website_url TEXT, description TEXT,
+    position INTEGER DEFAULT 0, is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.partners ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read partners" ON public.partners;
+CREATE POLICY "Allow public read partners" ON public.partners FOR SELECT USING (true);
+
+CREATE TABLE IF NOT EXISTS public.admin_profiles (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    email TEXT, full_name TEXT, role TEXT DEFAULT 'admin', is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.admin_profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.certificates (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    event_id UUID REFERENCES public.events(id) ON DELETE CASCADE,
+    certificate_type TEXT DEFAULT 'participation', certificate_url TEXT,
+    certificate_number TEXT UNIQUE, issued_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.event_winners (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    event_id UUID REFERENCES public.events(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    position INTEGER, prize_details TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.event_winners ENABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- MISSING COLUMNS IN EXISTING BASE TABLES
+-- =====================================================
+
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS event_type TEXT DEFAULT 'general';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS end_date TIMESTAMP WITH TIME ZONE;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS max_participants INTEGER;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS current_participants INTEGER DEFAULT 0;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS drive_folder_link TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS is_completed BOOLEAN DEFAULT false;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
+
+ALTER TABLE public.team_members ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
+ALTER TABLE public.team_members ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.team_members ADD COLUMN IF NOT EXISTS category TEXT;
+ALTER TABLE public.team_members ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE public.team_members ADD COLUMN IF NOT EXISTS linkedin_url TEXT;
+ALTER TABLE public.team_members ADD COLUMN IF NOT EXISTS skills TEXT[];
+ALTER TABLE public.team_members ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+ALTER TABLE public.team_members ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+
+ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
+ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS category TEXT;
+ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS event_id UUID REFERENCES public.events(id) ON DELETE SET NULL;
+ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS drive_folder_link TEXT;
+ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+
+ALTER TABLE public.quick_links ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
+ALTER TABLE public.quick_links ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE public.quick_links ADD COLUMN IF NOT EXISTS category TEXT;
+ALTER TABLE public.quick_links ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS enrollment_number TEXT;
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS college TEXT;
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS is_profile_complete BOOLEAN DEFAULT false;
+
+ALTER TABLE public.event_registrations ADD COLUMN IF NOT EXISTS registration_status TEXT DEFAULT 'pending';
+ALTER TABLE public.event_registrations ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'pending';
+ALTER TABLE public.event_registrations ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE public.event_registrations ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+ALTER TABLE public.event_registrations ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS event_registration_id UUID REFERENCES public.event_registrations(id) ON DELETE SET NULL;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'cash';
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'pending';
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS transaction_id TEXT;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS receipt_number TEXT;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS verified_by UUID;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS verified_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT now();
 
 -- Create club_admins if it does not exist yet
 CREATE TABLE IF NOT EXISTS public.club_admins (
@@ -141,11 +281,14 @@ CREATE POLICY "Allow admin write team_categories" ON public.team_categories USIN
 CREATE TABLE IF NOT EXISTS public.news (
     id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL, content TEXT, image_url TEXT, attachment_url TEXT,
+    attachment_type TEXT DEFAULT 'pdf', expire_date TIMESTAMP WITH TIME ZONE,
     published_date TIMESTAMP WITH TIME ZONE DEFAULT now(),
     is_marquee BOOLEAN DEFAULT false, is_active BOOLEAN DEFAULT true,
     position INTEGER DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
+ALTER TABLE public.news ADD COLUMN IF NOT EXISTS attachment_type TEXT DEFAULT 'pdf';
+ALTER TABLE public.news ADD COLUMN IF NOT EXISTS expire_date TIMESTAMP WITH TIME ZONE;
 ALTER TABLE public.news ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public can read active news" ON public.news;
 CREATE POLICY "Public can read active news" ON public.news FOR SELECT USING (is_active = true);
@@ -154,10 +297,11 @@ CREATE POLICY "Public can read active news" ON public.news FOR SELECT USING (is_
 CREATE TABLE IF NOT EXISTS public.downloads (
     id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL, description TEXT, file_url TEXT, drive_url TEXT,
-    file_type TEXT DEFAULT 'pdf', file_size TEXT,
+    file_type TEXT DEFAULT 'pdf', file_size TEXT, category TEXT DEFAULT 'general',
     is_active BOOLEAN DEFAULT true, position INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
+ALTER TABLE public.downloads ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'general';
 ALTER TABLE public.downloads ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public can read active downloads" ON public.downloads;
 CREATE POLICY "Public can read active downloads" ON public.downloads FOR SELECT USING (is_active = true);

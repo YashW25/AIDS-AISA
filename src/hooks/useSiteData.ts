@@ -304,7 +304,11 @@ export const useOccasions = (category?: string) => {
           console.error('Error fetching occasions:', fallback.error);
           return [] as Occasion[];
         }
-        return ((fallback.data || []).filter((o: any) => category ? o.category === category : true)) as Occasion[];
+        return ((fallback.data || []).filter((o: any) => {
+          const activeOk = o.is_active !== false;
+          const categoryOk = category ? o.category === category : true;
+          return activeOk && categoryOk;
+        })) as Occasion[];
       }
       return (data || []) as Occasion[];
     },

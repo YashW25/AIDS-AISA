@@ -70,7 +70,7 @@ export const AlumniSection = () => {
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
                       <span className="text-xl font-bold text-primary">
-                        {person.name.charAt(0)}
+                        {person.name?.charAt(0) || '?'}
                       </span>
                     </div>
                   )}
