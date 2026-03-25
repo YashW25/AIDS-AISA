@@ -456,6 +456,21 @@ ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAU
 ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 
 -- alumni
+-- Ensure id column exists (in case table was created manually without it)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='alumni' AND column_name='id'
+  ) THEN
+    ALTER TABLE public.alumni ADD COLUMN id UUID DEFAULT gen_random_uuid();
+    UPDATE public.alumni SET id = gen_random_uuid() WHERE id IS NULL;
+    BEGIN
+      ALTER TABLE public.alumni ADD PRIMARY KEY (id);
+    EXCEPTION WHEN others THEN NULL;
+    END;
+  END IF;
+END $$;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS graduation_year TEXT;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS branch TEXT;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS company TEXT;
