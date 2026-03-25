@@ -7,6 +7,9 @@
 -- TABLE SCHEMA FIXES
 -- =====================================================
 
+-- 0. Add theme_config column to site_settings for color schema admin
+ALTER TABLE public.site_settings ADD COLUMN IF NOT EXISTS theme_config TEXT;
+
 -- 0. Fix missing columns in contact_submissions (critical - breaks contact form!)
 ALTER TABLE public.contact_submissions ADD COLUMN IF NOT EXISTS subject TEXT NOT NULL DEFAULT '';
 ALTER TABLE public.contact_submissions ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'open';

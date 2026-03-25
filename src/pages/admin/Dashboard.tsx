@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { Layers, Navigation, FilePlus } from 'lucide-react';
+import { Layers, Navigation, FilePlus, Palette } from 'lucide-react';
 
 type SideNavItem = {
   label: string;
@@ -30,6 +30,7 @@ type SideNavItem = {
 const navItems: SideNavItem[] = [
   { label: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Site Settings', href: '/admin/dashboard/settings', icon: Settings },
+  { label: 'Color Schema', href: '/admin/dashboard/theme', icon: Palette },
   { label: 'Navigation', href: '/admin/dashboard/navigation', icon: Navigation },
   { label: 'Custom Pages', href: '/admin/dashboard/pages', icon: FilePlus },
   { label: 'Announcements', href: '/admin/dashboard/announcements', icon: Megaphone },

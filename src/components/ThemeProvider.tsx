@@ -1,28 +1,110 @@
-import React, { useEffect } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  DEFAULT_THEME,
+  THEME_STORAGE_KEY,
+  ThemeConfig,
+  applyGlobalTheme,
+  applyPageTheme,
+  getPageKey,
+  loadThemeFromStorage,
+  saveThemeToStorage,
+} from '@/lib/themeUtils';
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const themeRef = useRef<ThemeConfig>(loadThemeFromStorage());
+
+  const { data: dbTheme } = useQuery({
+    queryKey: ['site-settings-theme'],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('site_settings')
+        .select('theme_config')
+        .limit(1)
+        .maybeSingle();
+      if (error || !data?.theme_config) return null;
+      try {
+        const parsed = JSON.parse(data.theme_config) as ThemeConfig;
+        return parsed;
+      } catch {
+        return null;
+      }
+    },
+    retry: false,
+  });
+
   useEffect(() => {
-    const root = document.documentElement;
+    if (dbTheme) {
+      const merged: ThemeConfig = {
+        global: { ...DEFAULT_THEME.global, ...dbTheme.global },
+        pages: {
+          home: { ...DEFAULT_THEME.pages.home, ...(dbTheme.pages?.home || {}) },
+          about: { ...DEFAULT_THEME.pages.about, ...(dbTheme.pages?.about || {}) },
+          events: { ...DEFAULT_THEME.pages.events, ...(dbTheme.pages?.events || {}) },
+          team: { ...DEFAULT_THEME.pages.team, ...(dbTheme.pages?.team || {}) },
+          gallery: { ...DEFAULT_THEME.pages.gallery, ...(dbTheme.pages?.gallery || {}) },
+          contact: { ...DEFAULT_THEME.pages.contact, ...(dbTheme.pages?.contact || {}) },
+        },
+      };
+      themeRef.current = merged;
+      saveThemeToStorage(merged);
+      applyGlobalTheme(merged.global);
+      applyCurrentPageTheme(merged);
+    }
+  }, [dbTheme]);
 
-    // Use values from .env or fallback to defaults
-    const primary = import.meta.env.VITE_PRIMARY_COLOR || '#2563eb';
-    const secondary = import.meta.env.VITE_SECONDARY_COLOR || '#60a5fa';
-    const gradientFrom = import.meta.env.VITE_GRADIENT_FROM || '#f8fafc';
-    const gradientVia = import.meta.env.VITE_GRADIENT_VIA || '#dbeafe';
-    const gradientTo = import.meta.env.VITE_GRADIENT_TO || '#93c5fd';
+  useEffect(() => {
+    const theme = themeRef.current;
+    applyGlobalTheme(theme.global);
+    applyCurrentPageTheme(theme);
 
-    // Set the specific club theme variables
-    root.style.setProperty('--club-primary', primary);
-    root.style.setProperty('--club-secondary', secondary);
-    root.style.setProperty('--club-gradient-from', gradientFrom);
-    root.style.setProperty('--club-gradient-via', gradientVia);
-    root.style.setProperty('--club-gradient-to', gradientTo);
+    const handleRouteChange = () => {
+      const t = themeRef.current;
+      applyGlobalTheme(t.global);
+      applyCurrentPageTheme(t);
+    };
 
-    // Also override standard Tailwind colors directly so they work seamlessly with hex
-    root.style.setProperty('--primary', primary);
-    root.style.setProperty('--secondary', secondary);
+    window.addEventListener('popstate', handleRouteChange);
 
+    const originalPushState = history.pushState.bind(history);
+    const originalReplaceState = history.replaceState.bind(history);
+
+    history.pushState = (...args: Parameters<typeof history.pushState>) => {
+      originalPushState(...args);
+      setTimeout(handleRouteChange, 0);
+    };
+    history.replaceState = (...args: Parameters<typeof history.replaceState>) => {
+      originalReplaceState(...args);
+      setTimeout(handleRouteChange, 0);
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === THEME_STORAGE_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue) as ThemeConfig;
+          themeRef.current = parsed;
+          applyGlobalTheme(parsed.global);
+          applyCurrentPageTheme(parsed);
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+      window.removeEventListener('storage', handleStorageChange);
+      history.pushState = originalPushState;
+      history.replaceState = originalReplaceState;
+    };
   }, []);
 
   return <>{children}</>;
 };
+
+function applyCurrentPageTheme(theme: ThemeConfig) {
+  const pageKey = getPageKey(window.location.pathname);
+  if (pageKey && theme.pages[pageKey]) {
+    applyPageTheme(theme.pages[pageKey], theme.global);
+  }
+}
