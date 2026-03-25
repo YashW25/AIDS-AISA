@@ -91,7 +91,9 @@ export default function ThemeSettingsPage() {
   const queryClient = useQueryClient();
 
   const { data: dbData } = useQuery({
-    queryKey: ['site-settings-theme'],
+    // Use a separate key from ThemeProvider's 'site-settings-theme' to avoid
+    // sharing a cache entry with a different shape (raw row vs parsed ThemeConfig)
+    queryKey: ['site-settings-theme-row'],
     queryFn: async () => {
       // Select only 'id' first — always exists regardless of schema migrations
       const { data: row, error: rowErr } = await (supabase as any)
@@ -114,6 +116,8 @@ export default function ThemeSettingsPage() {
         return row; // theme_config column missing — return row with just id
       }
     },
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 
   const [localTheme, setLocalTheme] = useState<ThemeConfig>(loadThemeFromStorage);
@@ -226,7 +230,10 @@ export default function ThemeSettingsPage() {
       }
     },
     onSuccess: () => {
+      // Invalidate ThemeProvider's cache so it re-fetches the updated theme from DB
       queryClient.invalidateQueries({ queryKey: ['site-settings-theme'] });
+      // Also invalidate ThemeSettingsPage's own row cache
+      queryClient.invalidateQueries({ queryKey: ['site-settings-theme-row'] });
       toast.success('Color theme saved successfully!');
       setHasUnsaved(false);
       setShowConfirm(false);

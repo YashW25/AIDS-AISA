@@ -43,6 +43,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       }
     },
     retry: false,
+    // Never auto-refetch — only update when invalidateQueries is explicitly called
+    // (i.e., after a successful admin save). This prevents tab-switches or re-renders
+    // from re-fetching an old DB value and overwriting a locally-applied theme.
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   // On initial mount apply whatever is in localStorage immediately
