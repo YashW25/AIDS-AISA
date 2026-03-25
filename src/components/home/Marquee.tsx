@@ -7,9 +7,9 @@ export const Marquee = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-primary text-white overflow-hidden">
+      <div className="gradient-primary text-white overflow-hidden">
         <div className="flex items-center">
-          <div className="flex items-center gap-2 shrink-0 px-4 py-2.5 bg-primary-foreground/10">
+          <div className="flex items-center gap-2 shrink-0 px-4 py-2.5 bg-black/20">
             <Megaphone className="h-4 w-4" />
             <span className="text-xs font-semibold uppercase tracking-wide">Announcements</span>
           </div>
@@ -28,15 +28,15 @@ export const Marquee = () => {
   const content = `${single}   \u2022   `;
 
   return (
-    <div className="bg-primary text-white overflow-hidden">
+    <div className="gradient-primary text-white overflow-hidden">
       <div className="flex items-center">
-        <div className="flex items-center gap-2 shrink-0 px-4 py-2.5 bg-primary-foreground/10">
+        <div className="flex items-center gap-2 shrink-0 px-4 py-2.5 bg-black/20 backdrop-blur-sm">
           <Megaphone className="h-4 w-4" />
           <span className="text-xs font-semibold uppercase tracking-wide">Announcements</span>
         </div>
         <div className="overflow-hidden flex-1 py-2.5">
           {/* doubled content: animation goes 0 → -50% so the loop is seamless */}
-          <div className="animate-marquee text-sm font-medium">
+          <div className="animate-marquee text-sm font-medium drop-shadow-sm">
             {content}{content}
           </div>
         </div>
