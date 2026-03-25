@@ -558,12 +558,15 @@ const CertificatesPage = () => {
 
           <div className="space-y-2">
             <Label>Event (Optional)</Label>
-            <Select value={templateEventId} onValueChange={setTemplateEventId}>
+            <Select
+              value={templateEventId || '__none__'}
+              onValueChange={(v) => setTemplateEventId(v === '__none__' ? '' : v)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select event or leave for general use" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">General Template</SelectItem>
+                <SelectItem value="__none__">General Template</SelectItem>
                 {events.map((event) => (
                   <SelectItem key={event.id} value={event.id}>
                     {event.title}
