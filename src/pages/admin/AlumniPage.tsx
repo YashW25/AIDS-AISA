@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { useAdminFetch, useAdminCreate, useAdminUpdate, useAdminDelete } from '@/hooks/useAdminData';
+import { Star } from 'lucide-react';
 
 type Alumni = {
   id: string;
@@ -87,6 +89,22 @@ export default function AlumniPage() {
     { key: 'graduation_year', label: 'Batch' },
     { key: 'company', label: 'Company' },
     { key: 'job_title', label: 'Role' },
+    {
+      key: 'position',
+      label: 'Homepage',
+      render: (item: Alumni) => {
+        const pos = item.position ?? 999;
+        if (pos >= 1 && pos <= 3) {
+          return (
+            <Badge className="bg-amber-100 text-amber-700 border-amber-300 gap-1">
+              <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+              Featured #{pos}
+            </Badge>
+          );
+        }
+        return <span className="text-xs text-muted-foreground">—</span>;
+      },
+    },
   ];
 
   return (
@@ -144,7 +162,10 @@ export default function AlumniPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="position">Position</Label>
-              <Input id="position" type="number" {...register('position', { valueAsNumber: true })} />
+              <Input id="position" type="number" {...register('position', { valueAsNumber: true })} placeholder="e.g. 1" />
+              <p className="text-xs text-muted-foreground">
+                Set <strong>1, 2, or 3</strong> to feature this alumni on the homepage. Others won't appear there.
+              </p>
             </div>
           </div>
 

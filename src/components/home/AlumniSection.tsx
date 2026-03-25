@@ -1,25 +1,26 @@
 import { useState } from 'react';
 import { useAlumni } from '@/hooks/useSiteData';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronUp, Linkedin } from 'lucide-react';
 
 export const AlumniSection = () => {
   const { data: alumni, isLoading } = useAlumni();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showAll, setShowAll] = useState(false);
 
   if (isLoading) {
     return (
       <section className="py-16 bg-[#e8e8e8]">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <Skeleton className="h-6 w-24 mx-auto mb-2" />
+          <div className="text-center mb-16">
+            <Skeleton className="h-5 w-20 mx-auto mb-3" />
             <Skeleton className="h-10 w-48 mx-auto" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <Skeleton className="w-24 h-24 rounded-full mb-4" />
-                <Skeleton className="h-48 w-full rounded-xl" />
+          <div className="flex flex-wrap justify-center gap-8">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="w-64">
+                <Skeleton className="w-20 h-20 rounded-full mx-auto mb-4" />
+                <Skeleton className="h-52 w-full rounded-2xl" />
               </div>
             ))}
           </div>
@@ -28,38 +29,28 @@ export const AlumniSection = () => {
     );
   }
 
-  if (!alumni || alumni.length === 0) {
-    return null;
-  }
+  if (!alumni || alumni.length === 0) return null;
 
-  const itemsPerPage = 4;
-  const maxIndex = Math.max(0, alumni.length - itemsPerPage);
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
-  };
-
-  const visibleAlumni = alumni.slice(currentIndex, currentIndex + itemsPerPage);
+  const topAlumni = alumni.slice(0, 3);
+  const visibleAlumni = showAll ? alumni : topAlumni;
+  const hasMore = alumni.length > 3;
 
   return (
     <section className="py-16 bg-[#e8e8e8]">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <p className="text-muted-foreground mb-2">Meet our</p>
+          <p className="text-muted-foreground mb-2 text-sm uppercase tracking-wider">Meet our</p>
           <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground">
             Top Alumni
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {visibleAlumni.map((person, i) => (
-            <div key={person.id || i} className="relative">
-              {/* Profile Image - positioned at top-left */}
-              <div className="absolute -top-6 left-6 z-10">
+        {/* Centered grid — 1 col on mobile, 3 on desktop */}
+        <div className="flex flex-wrap justify-center gap-8 mb-10">
+          {visibleAlumni.map((person) => (
+            <div key={person.id} className="relative w-64 flex-shrink-0">
+              {/* Floating profile image */}
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-10">
                 <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#e8e8e8] shadow-lg bg-white">
                   {person.image_url ? (
                     <img
@@ -69,7 +60,7 @@ export const AlumniSection = () => {
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
-                      <span className="text-xl font-bold text-primary">
+                      <span className="text-2xl font-bold text-primary">
                         {person.name?.charAt(0) || '?'}
                       </span>
                     </div>
@@ -78,38 +69,59 @@ export const AlumniSection = () => {
               </div>
 
               {/* Card */}
-              <div className="bg-[#1a2744] rounded-2xl pt-10 pb-6 px-6 text-center min-h-[220px] flex flex-col justify-center mt-6">
-                <h3 className="text-lg font-bold text-white mb-2">{person.name}</h3>
-                <p className="text-[#4a90d9] text-sm mb-1">ISM&B</p>
+              <div className="bg-[#1a2744] rounded-2xl pt-14 pb-6 px-6 text-center min-h-[230px] flex flex-col justify-center mt-4">
+                <h3 className="text-lg font-bold text-white mb-1">{person.name}</h3>
+                <p className="text-[#4a90d9] text-xs mb-1 uppercase tracking-wide">AI & DS</p>
                 <p className="text-[#4a90d9] text-sm mb-4">Batch: {person.graduation_year}</p>
-                
+
                 <div className="text-white space-y-1">
-                  <p className="font-bold">{person.company}</p>
-                  <p className="text-sm">{person.job_title}</p>
-                  <p className="text-sm">{person.branch}</p>
+                  {person.company && (
+                    <p className="font-semibold text-sm">{person.company}</p>
+                  )}
+                  {person.job_title && (
+                    <p className="text-xs text-white/70">{person.job_title}</p>
+                  )}
+                  {person.branch && (
+                    <p className="text-xs text-white/60">{person.branch}</p>
+                  )}
                 </div>
+
+                {person.linkedin_url && (
+                  <a
+                    href={person.linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center justify-center gap-1.5 text-xs text-[#4a90d9] hover:text-white transition-colors"
+                  >
+                    <Linkedin className="w-3.5 h-3.5" />
+                    LinkedIn
+                  </a>
+                )}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Navigation Arrows */}
-        {alumni.length > itemsPerPage && (
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={handlePrev}
-              disabled={currentIndex === 0}
-              className="w-10 h-10 rounded-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+        {/* View More / Show Less button */}
+        {hasMore && (
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              onClick={() => setShowAll(!showAll)}
+              className="gap-2 border-[#1a2744] text-[#1a2744] hover:bg-[#1a2744] hover:text-white transition-all"
             >
-              <ChevronLeft className="w-5 h-5 text-white" />
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={currentIndex >= maxIndex}
-              className="w-10 h-10 rounded-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-            >
-              <ChevronRight className="w-5 h-5 text-white" />
-            </button>
+              {showAll ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  Show Less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  View More Alumni ({alumni.length - 3} more)
+                </>
+              )}
+            </Button>
           </div>
         )}
       </div>
