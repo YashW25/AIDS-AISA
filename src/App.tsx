@@ -43,6 +43,7 @@ import RegistrationsPage from "./pages/admin/RegistrationsPage";
 import CertificatesPage from "./pages/admin/CertificatesPage";
 import PopupAnnouncementsPage from "./pages/admin/PopupAnnouncementsPage";
 import AlumniPage from "./pages/admin/AlumniPage";
+import StudentsPage from "./pages/admin/StudentsPage";
 import CharterPage from "./pages/admin/CharterPage";
 import NewsPage from "./pages/admin/NewsPage";
 import DownloadsPage from "./pages/admin/DownloadsPage";
@@ -103,6 +104,7 @@ const App = () => (
                   <Route path="gallery" element={<GalleryPage />} />
                   <Route path="occasions" element={<OccasionsPage />} />
                   <Route path="partners" element={<PartnersPage />} />
+                  <Route path="students" element={<StudentsPage />} />
                   <Route path="alumni" element={<AlumniPage />} />
                   <Route path="charter" element={<CharterPage />} />
                   <Route path="news" element={<NewsPage />} />

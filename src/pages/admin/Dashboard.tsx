@@ -3,7 +3,7 @@ import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Image, Users, Calendar, Settings, LogOut, 
   Menu, X, GraduationCap, Megaphone, ChevronDown, ChevronRight, ImageIcon, Handshake, UserCog, User, BarChart3,
-  ClipboardList, Award, Bell, Download, Newspaper, ScrollText, MessageSquare, Database
+  ClipboardList, Award, Bell, Download, Newspaper, ScrollText, MessageSquare, Database, BookUser
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,7 +47,10 @@ const navItems: SideNavItem[] = [
   ]},
   { label: 'Gallery', href: '/admin/dashboard/gallery', icon: ImageIcon },
   { label: 'Partners', href: '/admin/dashboard/partners', icon: Handshake },
-  { label: 'Alumni', href: '/admin/dashboard/alumni', icon: GraduationCap },
+  { label: 'Students', href: '/admin/dashboard/students', icon: BookUser, children: [
+    { label: 'Student Records', href: '/admin/dashboard/students', icon: BookUser },
+    { label: 'Alumni', href: '/admin/dashboard/alumni', icon: GraduationCap },
+  ]},
   { label: 'Charter', href: '/admin/dashboard/charter', icon: ScrollText },
   { label: 'Notice', href: '/admin/dashboard/news', icon: Newspaper },
   { label: 'Downloads', href: '/admin/dashboard/downloads', icon: Download },
