@@ -52,7 +52,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     applyCurrentPageTheme(theme, window.location.pathname);
   }, []);
 
-  // When DB data arrives, merge it with defaults, persist to localStorage, apply
+  // When DB data arrives, merge with defaults, persist to localStorage, and apply.
+  // DB is the single source of truth — always apply it so all browsers stay in sync.
   useEffect(() => {
     if (!dbTheme) return;
     const merged: ThemeConfig = {

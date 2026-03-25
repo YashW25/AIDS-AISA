@@ -10,7 +10,7 @@ export const AlumniSection = () => {
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-[#e8e8e8]">
+      <section className="py-16 bg-muted">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <Skeleton className="h-5 w-20 mx-auto mb-3" />
@@ -36,7 +36,7 @@ export const AlumniSection = () => {
   const hasMore = alumni.length > 3;
 
   return (
-    <section className="py-16 bg-[#e8e8e8]">
+    <section className="py-16 bg-muted">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <p className="text-muted-foreground mb-2 text-sm uppercase tracking-wider">Meet our</p>
@@ -51,7 +51,7 @@ export const AlumniSection = () => {
             <div key={person.id} className="relative w-64 flex-shrink-0">
               {/* Floating profile image */}
               <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-10">
-                <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#e8e8e8] shadow-lg bg-white">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-muted shadow-lg bg-white">
                   {person.image_url ? (
                     <img
                       src={person.image_url}
@@ -69,10 +69,10 @@ export const AlumniSection = () => {
               </div>
 
               {/* Card */}
-              <div className="bg-[#1a2744] rounded-2xl pt-14 pb-6 px-6 text-center min-h-[230px] flex flex-col justify-center mt-4">
+              <div className="bg-secondary rounded-2xl pt-14 pb-6 px-6 text-center min-h-[230px] flex flex-col justify-center mt-4">
                 <h3 className="text-lg font-bold text-white mb-1">{person.name}</h3>
-                <p className="text-[#4a90d9] text-xs mb-1 uppercase tracking-wide">AI & DS</p>
-                <p className="text-[#4a90d9] text-sm mb-4">Batch: {person.graduation_year}</p>
+                <p className="text-primary/80 text-xs mb-1 uppercase tracking-wide">AI & DS</p>
+                <p className="text-primary/80 text-sm mb-4">Batch: {person.graduation_year}</p>
 
                 <div className="text-white space-y-1">
                   {person.company && (
@@ -91,7 +91,7 @@ export const AlumniSection = () => {
                     href={person.linkedin_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center justify-center gap-1.5 text-xs text-[#4a90d9] hover:text-white transition-colors"
+                    className="mt-4 inline-flex items-center justify-center gap-1.5 text-xs text-primary/80 hover:text-white transition-colors"
                   >
                     <Linkedin className="w-3.5 h-3.5" />
                     LinkedIn
@@ -108,7 +108,7 @@ export const AlumniSection = () => {
             <Button
               variant="outline"
               onClick={() => setShowAll(!showAll)}
-              className="gap-2 border-[#1a2744] text-[#1a2744] hover:bg-[#1a2744] hover:text-white transition-all"
+              className="gap-2 border-secondary text-secondary hover:bg-secondary hover:text-white transition-all"
             >
               {showAll ? (
                 <>

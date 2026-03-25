@@ -205,11 +205,16 @@ export default function ThemeSettingsPage() {
         .maybeSingle();
 
       if (row?.id) {
-        const { error } = await (supabase as any)
+        // Use select() to detect silent RLS failures (update blocked = 0 rows returned)
+        const { data: updated, error } = await (supabase as any)
           .from('site_settings')
           .update({ theme_config: themeJson })
-          .eq('id', row.id);
+          .eq('id', row.id)
+          .select('id');
         if (error) throw error;
+        if (!updated || updated.length === 0) {
+          throw new Error('RLS_BLOCKED');
+        }
       } else {
         // No row at all — insert one
         const { error } = await (supabase as any)
@@ -227,9 +232,11 @@ export default function ThemeSettingsPage() {
     onError: (err: Error) => {
       // localStorage save succeeded — colors apply in this browser.
       // DB save failed — likely the theme_config column is missing.
-      // Tell user to run: supabase/fix_theme_config.sql
+      const isRlsBlocked = err.message === 'RLS_BLOCKED';
       const isColumnMissing = err.message?.toLowerCase().includes('does not exist');
-      if (isColumnMissing) {
+      if (isRlsBlocked) {
+        toast.error('Theme saved locally, but database save was blocked by security policy. Ask your Supabase admin to allow UPDATE on site_settings, or run the SQL fix script.');
+      } else if (isColumnMissing) {
         toast.error('Theme saved locally. To save permanently, run supabase/fix_theme_config.sql in your Supabase SQL Editor.');
       } else {
         toast.error(`Theme saved locally. DB error: ${err.message}`);

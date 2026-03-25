@@ -21,7 +21,7 @@ export const Footer = () => {
   const { data: settings } = useSiteSettings();
   const visitorCount = useVisitorCount();
   return (
-    <footer className="bg-[#0f172a] text-white">
+    <footer className="gradient-hero text-white">
       <div className="container py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Section */}

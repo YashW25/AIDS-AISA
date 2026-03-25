@@ -93,7 +93,7 @@ export const Header = () => {
       <Marquee />
 
       {/* Desktop Navigation */}
-      <nav className="hidden lg:block bg-gradient-to-r from-[#0a1628] via-[#0f1d32] to-[#1a365d]">
+      <nav className="hidden lg:block gradient-hero">
         <div className="container flex items-center justify-between py-0">
           <div className="flex items-center">
             {navTree?.map((item) => {

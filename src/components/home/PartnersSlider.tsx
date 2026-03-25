@@ -6,7 +6,7 @@ export const PartnersSlider = () => {
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-[#1a2744]">
+      <section className="py-16 gradient-hero">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <Skeleton className="h-10 w-64 mx-auto mb-4 bg-white/10" />
@@ -26,7 +26,7 @@ export const PartnersSlider = () => {
   }
 
   return (
-    <section className="py-16 bg-[#1a2744]">
+    <section className="py-16 gradient-hero">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-display font-bold text-white italic">

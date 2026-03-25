@@ -35,7 +35,7 @@ export const HeroSection = () => {
   if (isLoading) {
     return (
       <section className="relative min-h-[80vh] flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0f172a] via-[#1e3a5f] to-[#2563eb]" />
+        <div className="absolute inset-0 gradient-hero" />
         <div className="container relative z-10">
           <div className="max-w-3xl space-y-6">
             <Skeleton className="h-10 w-64 bg-white/10" />
@@ -57,7 +57,7 @@ export const HeroSection = () => {
     return (
       <section className="relative min-h-[80vh] flex items-center overflow-hidden">
         {/* Background with gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0f172a] via-[#1e3a5f] to-[#2563eb]" />
+        <div className="absolute inset-0 gradient-hero" />
         <div className="absolute inset-0 opacity-20">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -113,8 +113,8 @@ export const HeroSection = () => {
             index === currentSlide ? "opacity-100" : "opacity-0"
           )}
         >
-          {/* Dark overlay with gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a]/95 via-[#1e3a5f]/80 to-transparent z-10" />
+          {/* Dark overlay with gradient — keeps image readable */}
+          <div className="absolute inset-0 z-10" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 55%, transparent 100%)' }} />
           <img
             src={slide.image_url}
             alt={slide.title}
