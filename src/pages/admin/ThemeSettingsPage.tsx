@@ -177,9 +177,11 @@ export default function ThemeSettingsPage() {
   };
 
   const resetToDefaults = () => {
+    // Immediately save DEFAULT_THEME to localStorage + DB, no extra "Save" click needed
     setLocalTheme(DEFAULT_THEME);
     applyGlobalTheme(DEFAULT_THEME.global);
-    setHasUnsaved(true);
+    setHasUnsaved(false);
+    saveMutation.mutate(DEFAULT_THEME);
   };
 
   const discardChanges = () => {

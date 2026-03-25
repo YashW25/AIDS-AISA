@@ -319,16 +319,50 @@ ALTER TABLE public.popup_announcements ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public can read active popup announcements" ON public.popup_announcements;
 CREATE POLICY "Public can read active popup announcements" ON public.popup_announcements FOR SELECT USING (is_active = true);`;
 
+const RED_THEME_JSON = JSON.stringify({
+  global: {
+    primary: '#dc2626', secondary: '#163562', accent: '#dc2626',
+    gold: '#f0c142', textPrimary: '#0e1929', textSecondary: '#526176',
+    linkColor: '#dc2626', background: '#fafafa', card: '#ffffff',
+    muted: '#e8ecf0', mutedForeground: '#526176', border: '#ced8e3',
+    gradientFrom: '#1a0000', gradientVia: '#7f1d1d', gradientTo: '#dc2626',
+  },
+  pages: { home: {}, about: {}, events: {}, team: {}, gallery: {}, contact: {} },
+});
+
 const DatabaseSetupPage = () => {
   const [seeding, setSeeding] = useState(false);
   const [results, setResults] = useState<SeedResult[]>([]);
   const [copied, setCopied] = useState(false);
+  const [resettingTheme, setResettingTheme] = useState(false);
   const queryClient = useQueryClient();
 
   const copySQL = () => {
     navigator.clipboard.writeText(SEED_SQL);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const resetThemeToRed = async () => {
+    setResettingTheme(true);
+    try {
+      const { data: row } = await (supabase as any).from('site_settings').select('id').limit(1).maybeSingle();
+      if (row?.id) {
+        const { error } = await (supabase as any).from('site_settings').update({ theme_config: RED_THEME_JSON }).eq('id', row.id).select('id');
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from('site_settings').insert({ theme_config: RED_THEME_JSON });
+        if (error) throw error;
+      }
+      // Clear localStorage so ThemeProvider reloads from the updated DB
+      localStorage.removeItem('aisa_theme_config_v2');
+      queryClient.invalidateQueries({ queryKey: ['site-settings-theme'] });
+      toast.success('Red theme applied! Reload the page to see the new colors.');
+    } catch (err: any) {
+      toast.error(`Failed to apply theme: ${err.message}`);
+    } finally {
+      setResettingTheme(false);
+    }
   };
 
   const runSeed = async () => {
@@ -341,8 +375,19 @@ const DatabaseSetupPage = () => {
       setResults([...newResults]);
     };
 
+    const DEFAULT_RED_THEME = JSON.stringify({
+      global: {
+        primary: '#dc2626', secondary: '#163562', accent: '#dc2626',
+        gold: '#f0c142', textPrimary: '#0e1929', textSecondary: '#526176',
+        linkColor: '#dc2626', background: '#fafafa', card: '#ffffff',
+        muted: '#e8ecf0', mutedForeground: '#526176', border: '#ced8e3',
+        gradientFrom: '#1a0000', gradientVia: '#7f1d1d', gradientTo: '#dc2626',
+      },
+      pages: { home: {}, about: {}, events: {}, team: {}, gallery: {}, contact: {} },
+    });
+
     try {
-      // 1. Site Settings
+      // 1. Site Settings — always apply red theme_config
       const { data: existingSettings } = await supabase.from('site_settings').select('id').limit(1).maybeSingle();
       if (!existingSettings) {
         const { error } = await supabase.from('site_settings').insert({
@@ -355,10 +400,13 @@ const DatabaseSetupPage = () => {
           instagram_url: 'https://www.instagram.com/aisa_isbmcoe',
           linkedin_url: 'https://www.linkedin.com/company/aisa-isbmcoe',
           youtube_url: 'https://www.youtube.com/@aisa_isbmcoe',
+          theme_config: DEFAULT_RED_THEME,
         } as any);
-        addResult('Site Settings', error ? 'error' : 'success', error ? error.message : 'Settings created');
+        addResult('Site Settings', error ? 'error' : 'success', error ? error.message : 'Settings created with red theme');
       } else {
-        addResult('Site Settings', 'skipped', 'Already exists');
+        // Row exists — always update theme_config to red so the site reflects the new color scheme
+        const { error } = await (supabase as any).from('site_settings').update({ theme_config: DEFAULT_RED_THEME }).eq('id', existingSettings.id);
+        addResult('Site Settings', error ? 'error' : 'success', error ? error.message : 'Theme reset to red — other settings preserved');
       }
 
       // 2. Announcements
@@ -575,6 +623,20 @@ const DatabaseSetupPage = () => {
               {SEED_SQL}
             </pre>
           </details>
+        </div>
+
+        {/* Quick Fix: Apply Red Theme */}
+        <div className="p-6 rounded-2xl bg-red-50 border border-red-200 dark:bg-red-950/20 dark:border-red-800">
+          <h2 className="font-display text-lg font-semibold text-red-900 dark:text-red-100 mb-2">
+            Quick Fix: Apply Red Color Theme
+          </h2>
+          <p className="text-sm text-red-800 dark:text-red-200 mb-4">
+            If the website still shows navy/blue colors after running the setup, click this to force-update the database to the red theme and clear the browser cache.
+          </p>
+          <Button onClick={resetThemeToRed} disabled={resettingTheme} variant="destructive">
+            {resettingTheme ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+            {resettingTheme ? 'Applying...' : 'Apply Red Theme Now'}
+          </Button>
         </div>
 
         {/* Step 2: Seed Data */}
