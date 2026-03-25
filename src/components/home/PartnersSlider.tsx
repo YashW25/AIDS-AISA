@@ -21,8 +21,8 @@ export const PartnersSlider = () => {
     return null;
   }
 
-  // Duplicate partners for seamless infinite scroll
-  const duplicatedPartners = [...partners, ...partners, ...partners];
+  // Duplicate partners once for seamless infinite scroll (animation goes -50%)
+  const duplicatedPartners = [...partners, ...partners];
   return <section className="py-16 bg-[#1a2744] overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">

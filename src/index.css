@@ -165,16 +165,23 @@
   .nav-bar {
     background: hsl(var(--navy));
   }
+
+  /* Icon container gradient using primary/accent color */
+  .gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  }
 }
 
 @layer utilities {
   .animate-marquee {
-    animation: marquee 30s linear infinite;
+    animation: marquee 25s linear infinite;
+    display: inline-block;
+    white-space: nowrap;
   }
   
   @keyframes marquee {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
   }
 
   .animate-fade-in {
@@ -206,10 +213,12 @@
 
   .animate-scroll-left {
     animation: scrollLeft 30s linear infinite;
+    display: flex;
+    width: max-content;
   }
 
   @keyframes scrollLeft {
     0% { transform: translateX(0); }
-    100% { transform: translateX(-33.333%); }
+    100% { transform: translateX(-50%); }
   }
 }

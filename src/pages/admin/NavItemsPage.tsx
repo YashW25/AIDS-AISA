@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { useAllNavItems, useNavItemMutations, NavItem } from '@/hooks/useNavItems';
 import { useCustomPages } from '@/hooks/useCustomPages';
 import { Button } from '@/components/ui/button';
@@ -114,8 +114,8 @@ export default function NavItemsPage() {
             </TableHeader>
             <TableBody>
               {parentItems.map((item) => (
-                <>
-                  <TableRow key={item.id}>
+                <Fragment key={item.id}>
+                  <TableRow>
                     <TableCell><GripVertical className="h-4 w-4 text-muted-foreground" /></TableCell>
                     <TableCell className="font-medium">{item.label}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{item.href}</TableCell>
@@ -165,7 +165,7 @@ export default function NavItemsPage() {
                       </TableCell>
                     </TableRow>
                   ))}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>

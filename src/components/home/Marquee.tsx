@@ -23,7 +23,9 @@ export const Marquee = () => {
 
   if (!announcements?.length) return null;
 
-  const content = announcements.map(a => a.content).join('  •  ');
+  // Join all announcements with a separator, then double for seamless loop
+  const single = announcements.map(a => a.content).join('   \u2022   ');
+  const content = `${single}   \u2022   `;
 
   return (
     <div className="bg-primary text-white overflow-hidden">
@@ -33,8 +35,9 @@ export const Marquee = () => {
           <span className="text-xs font-semibold uppercase tracking-wide">Announcements</span>
         </div>
         <div className="overflow-hidden flex-1 py-2.5">
-          <div className="animate-marquee whitespace-nowrap text-sm font-medium px-4">
-            {content}  •  {content}
+          {/* doubled content: animation goes 0 → -50% so the loop is seamless */}
+          <div className="animate-marquee text-sm font-medium">
+            {content}{content}
           </div>
         </div>
       </div>
