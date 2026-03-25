@@ -64,10 +64,12 @@ export default function AlumniPage() {
   };
 
   const onSubmit = (data: Alumni) => {
+    // Strip id from form data — DB generates it on create; we use editingItem.id on update
+    const { id: _formId, ...payload } = data as any;
     if (editingItem) {
-      updateMutation.mutate({ id: editingItem.id, ...data }, { onSuccess: closeModal });
+      updateMutation.mutate({ id: editingItem.id, ...payload }, { onSuccess: closeModal });
     } else {
-      createMutation.mutate(data, { onSuccess: closeModal });
+      createMutation.mutate(payload, { onSuccess: closeModal });
     }
   };
 

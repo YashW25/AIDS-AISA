@@ -35,9 +35,12 @@ export const useAdminCreate = <T>(table: string, queryKey: string) => {
   
   return useMutation({
     mutationFn: async (item: Partial<T>) => {
+      // Strip undefined id so the database generates it
+      const { id, ...rest } = item as any;
+      const insertData = id !== undefined && id !== null ? { id, ...rest } : rest;
       const { data, error } = await (supabase as any)
         .from(table)
-        .insert(item)
+        .insert(insertData)
         .select()
         .single();
       if (error) throw error;
@@ -59,6 +62,9 @@ export const useAdminUpdate = <T>(table: string, queryKey: string) => {
   
   return useMutation({
     mutationFn: async ({ id, ...item }: { id: string } & Partial<T>) => {
+      if (!id || id === 'undefined' || id === 'null') {
+        throw new Error('Record has no ID. Please run the database fix SQL (supabase/fix_alumni_id_column.sql) in your Supabase SQL Editor.');
+      }
       const { data, error } = await (supabase as any)
         .from(table)
         .update(item)
@@ -84,6 +90,9 @@ export const useAdminDelete = (table: string, queryKey: string) => {
   
   return useMutation({
     mutationFn: async (id: string) => {
+      if (!id || id === 'undefined' || id === 'null') {
+        throw new Error('Record has no ID. Please run the database fix SQL (supabase/fix_alumni_id_column.sql) in your Supabase SQL Editor.');
+      }
       const { error } = await (supabase as any)
         .from(table)
         .delete()
