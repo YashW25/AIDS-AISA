@@ -25,7 +25,10 @@ export function useNavItems() {
         .from('nav_items')
         .select('*')
         .order('position', { ascending: true });
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching nav items:', error);
+        return [] as NavItem[];
+      }
       return data as NavItem[];
     },
   });
@@ -39,7 +42,10 @@ export function useAllNavItems() {
         .from('nav_items')
         .select('*')
         .order('position', { ascending: true });
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching all nav items:', error);
+        return [] as NavItem[];
+      }
       return data as NavItem[];
     },
   });

@@ -3,7 +3,7 @@ import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Image, Users, Calendar, Settings, LogOut, 
   Menu, X, GraduationCap, Megaphone, ChevronDown, ChevronRight, ImageIcon, Handshake, UserCog, User, BarChart3,
-  ClipboardList, Award, Bell, Download, Newspaper, ScrollText, MessageSquare
+  ClipboardList, Award, Bell, Download, Newspaper, ScrollText, MessageSquare, Database
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,6 +52,7 @@ const navItems: SideNavItem[] = [
   { label: 'Downloads', href: '/admin/dashboard/downloads', icon: Download },
   { label: 'Contact Messages', href: '/admin/dashboard/contact', icon: MessageSquare },
   { label: 'Admin Users', href: '/admin/dashboard/admins', icon: UserCog },
+  { label: 'Database Setup', href: '/admin/dashboard/setup', icon: Database },
 ];
 
 const AdminDashboard = () => {

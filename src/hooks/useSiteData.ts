@@ -190,7 +190,10 @@ export const useCharterSettings = () => {
         .select('*')
         .limit(1)
         .maybeSingle();
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching charter settings:', error);
+        return null;
+      }
       return data;
     },
   });
@@ -242,16 +245,18 @@ export const useAlumni = () => {
   return useQuery({
     queryKey: ['alumni'],
     queryFn: async () => {
+      // First try with is_active filter
       const { data, error } = await supabase
         .from('alumni')
         .select('*')
-        .eq('is_active', true)
         .order('position', { ascending: true });
       if (error) {
         console.error('Error fetching alumni:', error);
         return [] as any[];
       }
-      return (data || []) as any[];
+      // Filter client-side if is_active column exists, otherwise show all
+      const result = data || [];
+      return result.filter((a: any) => a.is_active !== false) as any[];
     },
   });
 };
@@ -268,8 +273,11 @@ export const usePopupAnnouncements = () => {
         .or(`start_date.is.null,start_date.lte.${now}`)
         .or(`end_date.is.null,end_date.gte.${now}`)
         .order('position', { ascending: true });
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching popup announcements:', error);
+        return [] as any[];
+      }
+      return data || [] as any[];
     },
   });
 };
@@ -282,7 +290,7 @@ export const useOccasions = (category?: string) => {
         .from('occasions')
         .select('*')
         .eq('is_active', true)
-        .order('occasion_date', { ascending: false });
+        .order('position', { ascending: true });
       
       if (category) {
         query = query.eq('category', category);
@@ -290,8 +298,13 @@ export const useOccasions = (category?: string) => {
       
       const { data, error } = await query;
       if (error) {
-        console.error('Error fetching occasions:', error);
-        return [] as Occasion[];
+        // Try without is_active filter if column missing
+        const fallback = await supabase.from('occasions').select('*').order('created_at', { ascending: false });
+        if (fallback.error) {
+          console.error('Error fetching occasions:', fallback.error);
+          return [] as Occasion[];
+        }
+        return ((fallback.data || []).filter((o: any) => category ? o.category === category : true)) as Occasion[];
       }
       return (data || []) as Occasion[];
     },

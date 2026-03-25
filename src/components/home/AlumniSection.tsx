@@ -56,8 +56,8 @@ export const AlumniSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {visibleAlumni.map((person) => (
-            <div key={person.id} className="relative">
+          {visibleAlumni.map((person, i) => (
+            <div key={person.id || i} className="relative">
               {/* Profile Image - positioned at top-left */}
               <div className="absolute -top-6 left-6 z-10">
                 <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#e8e8e8] shadow-lg bg-white">

@@ -52,7 +52,7 @@ import NotFound from "./pages/NotFound";
 import NavItemsPage from "./pages/admin/NavItemsPage";
 import CustomPagesPage from "./pages/admin/CustomPagesPage";
 import CustomPage from "./pages/CustomPage";
-
+import DatabaseSetupPage from "./pages/admin/DatabaseSetupPage";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +112,7 @@ const App = () => (
                   <Route path="profile" element={<ProfilePage />} />
                   <Route path="navigation" element={<NavItemsPage />} />
                   <Route path="pages" element={<CustomPagesPage />} />
+                  <Route path="setup" element={<DatabaseSetupPage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
