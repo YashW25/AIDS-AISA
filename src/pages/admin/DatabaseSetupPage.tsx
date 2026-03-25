@@ -36,13 +36,13 @@ ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WIT
 CREATE TABLE IF NOT EXISTS public.alumni (
     id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
     name TEXT NOT NULL,
-    batch_year INTEGER,
-    current_company TEXT,
-    current_role TEXT,
-    photo_url TEXT,
+    graduation_year TEXT,
     branch TEXT,
-    testimonial TEXT,
+    company TEXT,
+    job_title TEXT,
+    image_url TEXT,
     linkedin_url TEXT,
+    testimonial TEXT,
     is_active BOOLEAN DEFAULT true,
     position INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
@@ -53,22 +53,27 @@ DROP POLICY IF EXISTS "Public can read active alumni" ON public.alumni;
 CREATE POLICY "Public can read active alumni" ON public.alumni FOR SELECT USING (is_active = true);
 DROP POLICY IF EXISTS "Admins can manage alumni" ON public.alumni;
 CREATE POLICY "Admins can manage alumni" ON public.alumni FOR ALL USING (auth.role() = 'authenticated');
+ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS graduation_year TEXT;
+ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS branch TEXT;
+ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS company TEXT;
+ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS job_title TEXT;
+ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS linkedin_url TEXT;
+ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS testimonial TEXT;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
-ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS branch TEXT;
-ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS testimonial TEXT;
-ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS linkedin_url TEXT;
 
 -- Create occasions if it does not exist yet, then fix any missing columns
 CREATE TABLE IF NOT EXISTS public.occasions (
     id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
+    occasion_date DATE,
+    category TEXT DEFAULT 'celebration',
     cover_image_url TEXT,
     drive_folder_link TEXT,
-    occasion_date TIMESTAMP WITH TIME ZONE DEFAULT now(),
-    position INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT true,
+    position INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
@@ -77,11 +82,12 @@ DROP POLICY IF EXISTS "Public can read active occasions" ON public.occasions;
 CREATE POLICY "Public can read active occasions" ON public.occasions FOR SELECT USING (is_active = true);
 DROP POLICY IF EXISTS "Admins can manage occasions" ON public.occasions;
 CREATE POLICY "Admins can manage occasions" ON public.occasions FOR ALL USING (auth.role() = 'authenticated');
-ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS occasion_date TIMESTAMP WITH TIME ZONE DEFAULT now();
-ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
-ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS occasion_date DATE;
+ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'celebration';
 ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS cover_image_url TEXT;
 ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS drive_folder_link TEXT;
+ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
 
 -- Add theme_config for color schema admin
 ALTER TABLE public.site_settings ADD COLUMN IF NOT EXISTS theme_config TEXT;
