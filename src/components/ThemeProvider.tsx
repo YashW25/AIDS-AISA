@@ -59,8 +59,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     applyGlobalTheme(theme.global);
     applyCurrentPageTheme(theme);
 
+    // Always read fresh from localStorage on route change so saved themes apply instantly
     const handleRouteChange = () => {
-      const t = themeRef.current;
+      const t = loadThemeFromStorage();
+      themeRef.current = t;
       applyGlobalTheme(t.global);
       applyCurrentPageTheme(t);
     };
@@ -79,6 +81,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       setTimeout(handleRouteChange, 0);
     };
 
+    // Cross-tab sync via storage event
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === THEME_STORAGE_KEY && e.newValue) {
         try {
@@ -91,9 +94,21 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     };
     window.addEventListener('storage', handleStorageChange);
 
+    // Same-tab sync: ThemeSettingsPage dispatches this event after saving
+    const handleThemeChange = (e: Event) => {
+      const parsed = (e as CustomEvent<ThemeConfig>).detail;
+      if (parsed) {
+        themeRef.current = parsed;
+        applyGlobalTheme(parsed.global);
+        applyCurrentPageTheme(parsed);
+      }
+    };
+    window.addEventListener('aisa-theme-change', handleThemeChange);
+
     return () => {
       window.removeEventListener('popstate', handleRouteChange);
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('aisa-theme-change', handleThemeChange);
       history.pushState = originalPushState;
       history.replaceState = originalReplaceState;
     };

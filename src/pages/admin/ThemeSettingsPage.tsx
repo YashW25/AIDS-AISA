@@ -178,6 +178,12 @@ export default function ThemeSettingsPage() {
 
   const saveMutation = useMutation({
     mutationFn: async (theme: ThemeConfig) => {
+      // Save to localStorage FIRST so navigation always shows the new theme
+      // even if the DB save fails (e.g. theme_config column missing)
+      saveThemeToStorage(theme);
+      // Notify ThemeProvider in same tab to sync its internal ref
+      window.dispatchEvent(new CustomEvent('aisa-theme-change', { detail: theme }));
+
       const themeJson = JSON.stringify(theme);
       if (dbData?.id) {
         const { error } = await (supabase as any)
@@ -191,7 +197,6 @@ export default function ThemeSettingsPage() {
           .insert({ theme_config: themeJson });
         if (error) throw error;
       }
-      saveThemeToStorage(theme);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['site-settings-theme'] });
@@ -200,7 +205,10 @@ export default function ThemeSettingsPage() {
       setShowConfirm(false);
     },
     onError: (err: Error) => {
-      toast.error(err.message || 'Failed to save theme. Running fix SQL might be needed.');
+      // localStorage was already saved above — colors will persist on navigation
+      // but DB save failed (likely theme_config column missing — run the SQL fix)
+      toast.error('Colors saved locally but database save failed. Run the SQL fix script to make colors permanent across all browsers.');
+      setHasUnsaved(false);
       setShowConfirm(false);
     },
   });
