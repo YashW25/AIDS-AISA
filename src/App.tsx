@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ClubProvider } from "@/contexts/ClubContext";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider, ThemeRouteSync } from "@/components/ThemeProvider";
 import { AppWrapper } from "@/components/AppWrapper";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import Index from "./pages/Index";
@@ -68,6 +68,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <ScrollToTop />
+              <ThemeRouteSync />
               <AppWrapper>
               <Routes>
                 <Route path="/" element={<Index />} />
