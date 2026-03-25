@@ -103,19 +103,73 @@ CREATE POLICY "Public can read certificate templates" ON public.certificate_temp
 DROP POLICY IF EXISTS "Admins can manage certificate templates" ON public.certificate_templates;
 CREATE POLICY "Admins can manage certificate templates" ON public.certificate_templates FOR ALL USING (auth.role() = 'authenticated');
 
--- 0e. Add missing columns to club_admins if not exists
+-- 0e. Create club_admins table if not exists (safe for both new and existing DBs)
+CREATE TABLE IF NOT EXISTS public.club_admins (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT,
+    full_name TEXT,
+    role TEXT DEFAULT 'admin',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.club_admins ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can read club_admins" ON public.club_admins;
+CREATE POLICY "Admins can read club_admins" ON public.club_admins FOR SELECT USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Admins can manage club_admins" ON public.club_admins;
+CREATE POLICY "Admins can manage club_admins" ON public.club_admins FOR ALL USING (auth.role() = 'authenticated');
+-- Also add missing columns in case the table already existed with fewer columns
 ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS full_name TEXT;
 ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'admin';
+ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS email TEXT;
 ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT now();
 
--- 1. Fix missing columns in alumni table
+-- 1. Create alumni table if not exists, then fix any missing columns
+CREATE TABLE IF NOT EXISTS public.alumni (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    name TEXT NOT NULL,
+    batch_year INTEGER,
+    current_company TEXT,
+    current_role TEXT,
+    photo_url TEXT,
+    branch TEXT,
+    testimonial TEXT,
+    linkedin_url TEXT,
+    is_active BOOLEAN DEFAULT true,
+    position INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.alumni ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can read active alumni" ON public.alumni;
+CREATE POLICY "Public can read active alumni" ON public.alumni FOR SELECT USING (is_active = true);
+DROP POLICY IF EXISTS "Admins can manage alumni" ON public.alumni;
+CREATE POLICY "Admins can manage alumni" ON public.alumni FOR ALL USING (auth.role() = 'authenticated');
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS branch TEXT;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS testimonial TEXT;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS linkedin_url TEXT;
 
--- 2. Fix missing columns in occasions table
+-- 2. Create occasions table if not exists, then fix any missing columns
+CREATE TABLE IF NOT EXISTS public.occasions (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    cover_image_url TEXT,
+    drive_folder_link TEXT,
+    occasion_date TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    position INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.occasions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can read active occasions" ON public.occasions;
+CREATE POLICY "Public can read active occasions" ON public.occasions FOR SELECT USING (is_active = true);
+DROP POLICY IF EXISTS "Admins can manage occasions" ON public.occasions;
+CREATE POLICY "Admins can manage occasions" ON public.occasions FOR ALL USING (auth.role() = 'authenticated');
 ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS occasion_date TIMESTAMP WITH TIME ZONE DEFAULT now();
 ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
 ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS cover_image_url TEXT;

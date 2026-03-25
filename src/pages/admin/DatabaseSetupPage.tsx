@@ -12,19 +12,79 @@ const SEED_SQL = `-- Run this in Supabase SQL Editor (Database > SQL Editor)
 -- AISA Club - Complete Schema Fix
 -- =====================================================
 
--- Fix missing columns in alumni
+-- Create club_admins if it does not exist yet
+CREATE TABLE IF NOT EXISTS public.club_admins (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT,
+    full_name TEXT,
+    role TEXT DEFAULT 'admin',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.club_admins ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can read club_admins" ON public.club_admins;
+CREATE POLICY "Admins can read club_admins" ON public.club_admins FOR SELECT USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Admins can manage club_admins" ON public.club_admins;
+CREATE POLICY "Admins can manage club_admins" ON public.club_admins FOR ALL USING (auth.role() = 'authenticated');
+ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'admin';
+ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE public.club_admins ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+
+-- Create alumni if it does not exist yet, then fix any missing columns
+CREATE TABLE IF NOT EXISTS public.alumni (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    name TEXT NOT NULL,
+    batch_year INTEGER,
+    current_company TEXT,
+    current_role TEXT,
+    photo_url TEXT,
+    branch TEXT,
+    testimonial TEXT,
+    linkedin_url TEXT,
+    is_active BOOLEAN DEFAULT true,
+    position INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.alumni ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can read active alumni" ON public.alumni;
+CREATE POLICY "Public can read active alumni" ON public.alumni FOR SELECT USING (is_active = true);
+DROP POLICY IF EXISTS "Admins can manage alumni" ON public.alumni;
+CREATE POLICY "Admins can manage alumni" ON public.alumni FOR ALL USING (auth.role() = 'authenticated');
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS branch TEXT;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS testimonial TEXT;
 ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS linkedin_url TEXT;
 
--- Fix missing columns in occasions
+-- Create occasions if it does not exist yet, then fix any missing columns
+CREATE TABLE IF NOT EXISTS public.occasions (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    cover_image_url TEXT,
+    drive_folder_link TEXT,
+    occasion_date TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    position INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+ALTER TABLE public.occasions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can read active occasions" ON public.occasions;
+CREATE POLICY "Public can read active occasions" ON public.occasions FOR SELECT USING (is_active = true);
+DROP POLICY IF EXISTS "Admins can manage occasions" ON public.occasions;
+CREATE POLICY "Admins can manage occasions" ON public.occasions FOR ALL USING (auth.role() = 'authenticated');
 ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS occasion_date TIMESTAMP WITH TIME ZONE DEFAULT now();
 ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS position INTEGER DEFAULT 0;
 ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS cover_image_url TEXT;
 ALTER TABLE public.occasions ADD COLUMN IF NOT EXISTS drive_folder_link TEXT;
+
+-- Add theme_config for color schema admin
+ALTER TABLE public.site_settings ADD COLUMN IF NOT EXISTS theme_config TEXT;
 
 -- Fix missing columns in site_settings
 ALTER TABLE public.site_settings ADD COLUMN IF NOT EXISTS club_full_name TEXT;
