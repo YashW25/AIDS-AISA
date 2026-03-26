@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ const PublicFormPage = () => {
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [checkboxValues, setCheckboxValues] = useState<Record<string, string[]>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: form, isLoading, error: formError } = useQuery({
@@ -34,6 +35,15 @@ const PublicFormPage = () => {
       return data;
     },
   });
+
+  // Check if this device already submitted a one-time form
+  useEffect(() => {
+    if (form && form.settings?.allow_multiple === false) {
+      if (localStorage.getItem(`form-submitted-${form.id}`) === '1') {
+        setAlreadySubmitted(true);
+      }
+    }
+  }, [form]);
 
   const submitMutation = useMutation({
     mutationFn: async () => {
@@ -70,7 +80,12 @@ const PublicFormPage = () => {
       });
       if (error) throw new Error(error.message);
     },
-    onSuccess: () => setSubmitted(true),
+    onSuccess: () => {
+      setSubmitted(true);
+      if (!form?.settings?.allow_multiple) {
+        localStorage.setItem(`form-submitted-${form.id}`, '1');
+      }
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -238,16 +253,31 @@ const PublicFormPage = () => {
     );
   }
 
+  if (alreadySubmitted) {
+    return (
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <CheckCircle2 className="h-16 w-16 text-blue-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">Already Submitted</h1>
+          <p className="text-muted-foreground">You've already filled this form on this device. This form only allows one response per device.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (submitted) {
+    const isOneTime = form?.settings?.allow_multiple === false;
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-2">Response Submitted!</h1>
           <p className="text-muted-foreground mb-6">Thank you for filling out the form. Your response has been recorded.</p>
-          <Button variant="outline" onClick={() => { setSubmitted(false); setResponses({}); setCheckboxValues({}); }}>
-            Submit Another Response
-          </Button>
+          {!isOneTime && (
+            <Button variant="outline" onClick={() => { setSubmitted(false); setResponses({}); setCheckboxValues({}); }}>
+              Submit Another Response
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -255,14 +285,29 @@ const PublicFormPage = () => {
 
   const headerText = form.settings?.header_text || siteSettings?.club_name || 'AISA Club';
   const subheader = form.settings?.subheader || '';
+  const headerColor = form.settings?.header_color || '#1e40af';
+  const logoUrl = form.settings?.logo_url || '';
 
   return (
     <div className="min-h-screen bg-muted/30 py-10 px-4">
       <div className="max-w-xl mx-auto">
         {/* Letterhead header */}
-        <div className="rounded-t-2xl bg-[#1e40af] text-white text-center py-5 px-6 mb-0">
-          <p className="font-bold text-lg">{headerText}</p>
-          {subheader && <p className="text-sm text-blue-100 mt-0.5">{subheader}</p>}
+        <div
+          className="rounded-t-2xl text-white py-5 px-6 mb-0 flex items-center gap-4"
+          style={{ backgroundColor: headerColor }}
+        >
+          {logoUrl && (
+            <img
+              src={logoUrl}
+              alt="Logo"
+              className="h-12 w-12 object-contain rounded shrink-0"
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          )}
+          <div className={logoUrl ? 'text-left' : 'text-center flex-1'}>
+            <p className="font-bold text-lg">{headerText}</p>
+            {subheader && <p className="text-sm text-white/80 mt-0.5">{subheader}</p>}
+          </div>
         </div>
 
         {/* Form card */}

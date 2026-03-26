@@ -51,9 +51,12 @@ const FormBuilderPage = () => {
   const [description, setDescription] = useState('');
   const [slug, setSlug] = useState('');
   const [isPublished, setIsPublished] = useState(false);
+  const [allowMultiple, setAllowMultiple] = useState(true);
   const [headerText, setHeaderText] = useState('AISA Club');
   const [subheader, setSubheader] = useState('');
   const [footerText, setFooterText] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [headerColor, setHeaderColor] = useState('#1e40af');
   const [fields, setFields] = useState<FormField[]>([]);
   const [fieldModalOpen, setFieldModalOpen] = useState(false);
   const [editingField, setEditingField] = useState<FormField | null>(null);
@@ -76,9 +79,12 @@ const FormBuilderPage = () => {
       setDescription(existingForm.description || '');
       setSlug(existingForm.slug);
       setIsPublished(existingForm.is_published);
+      setAllowMultiple(existingForm.settings?.allow_multiple !== false);
       setHeaderText(existingForm.settings?.header_text || 'AISA Club');
       setSubheader(existingForm.settings?.subheader || '');
       setFooterText(existingForm.settings?.footer_text || '');
+      setLogoUrl(existingForm.settings?.logo_url || '');
+      setHeaderColor(existingForm.settings?.header_color || '#1e40af');
       setFields(existingForm.fields || []);
     }
   }, [existingForm]);
@@ -121,7 +127,14 @@ const FormBuilderPage = () => {
         slug: slug.trim(),
         is_published: isPublished,
         fields,
-        settings: { header_text: headerText, subheader, footer_text: footerText },
+        settings: {
+          allow_multiple: allowMultiple,
+          header_text: headerText,
+          subheader,
+          footer_text: footerText,
+          logo_url: logoUrl.trim(),
+          header_color: headerColor,
+        },
         updated_at: new Date().toISOString(),
       };
 
@@ -252,13 +265,79 @@ const FormBuilderPage = () => {
         </div>
       </div>
 
+      {/* Submission Settings */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Response Settings</h2>
+        <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-muted/40 border border-border">
+          <div>
+            <p className="font-medium text-sm text-foreground">
+              {allowMultiple ? 'Multiple submissions allowed' : 'One response per device'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {allowMultiple
+                ? 'Anyone can fill this form multiple times from the same device.'
+                : 'Each device can only submit this form once (tracked via browser).'}
+            </p>
+          </div>
+          <Switch
+            checked={!allowMultiple}
+            onCheckedChange={v => setAllowMultiple(!v)}
+            id="one-time-toggle"
+          />
+        </div>
+      </div>
+
       {/* PDF Letterhead Settings */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">PDF Export Letterhead</h2>
-        <p className="text-xs text-muted-foreground">These appear in the header and footer when exporting responses as PDF.</p>
+        <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">PDF Export Design</h2>
+        <p className="text-xs text-muted-foreground">Customise the header and footer shown on exported PDF responses.</p>
+
+        {/* Logo + Color row */}
+        <div className="grid grid-cols-[1fr_auto] gap-4 items-end">
+          <div className="space-y-2">
+            <Label>Logo URL (optional)</Label>
+            <Input
+              value={logoUrl}
+              onChange={e => setLogoUrl(e.target.value)}
+              placeholder="https://example.com/logo.png"
+            />
+            <p className="text-xs text-muted-foreground">Paste a public image URL — the logo appears on the left of the PDF header.</p>
+          </div>
+          <div className="space-y-2">
+            <Label>Header Colour</Label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={headerColor}
+                onChange={e => setHeaderColor(e.target.value)}
+                className="h-9 w-12 rounded border border-border cursor-pointer p-0.5"
+              />
+              <Input
+                value={headerColor}
+                onChange={e => setHeaderColor(e.target.value)}
+                className="w-28 font-mono text-sm"
+                maxLength={7}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Logo preview */}
+        {logoUrl && (
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30">
+            <img
+              src={logoUrl}
+              alt="Logo preview"
+              className="h-10 w-10 object-contain rounded"
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+            <p className="text-xs text-muted-foreground">Logo preview — make sure it's publicly accessible</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Header (Institution Name)</Label>
+            <Label>Header Text (Institution Name)</Label>
             <Input value={headerText} onChange={e => setHeaderText(e.target.value)} placeholder="e.g. ISBM College of Engineering" />
           </div>
           <div className="space-y-2">
@@ -269,6 +348,31 @@ const FormBuilderPage = () => {
         <div className="space-y-2">
           <Label>Footer Text</Label>
           <Input value={footerText} onChange={e => setFooterText(e.target.value)} placeholder="e.g. Confidential — For internal use only" />
+        </div>
+
+        {/* PDF preview bar */}
+        <div className="rounded-lg overflow-hidden border border-border">
+          <div
+            className="flex items-center gap-3 px-4 py-3"
+            style={{ backgroundColor: headerColor }}
+          >
+            {logoUrl && (
+              <img
+                src={logoUrl}
+                alt="Logo"
+                className="h-8 w-8 object-contain rounded shrink-0"
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-bold text-sm truncate">{headerText || 'Header Text'}</p>
+              {subheader && <p className="text-white/80 text-xs truncate">{subheader}</p>}
+            </div>
+          </div>
+          <div className="bg-muted/20 px-4 py-2 flex justify-between items-center border-t border-border">
+            <p className="text-xs text-muted-foreground truncate">{footerText || 'Footer text...'}</p>
+            <p className="text-xs text-muted-foreground">Page 1</p>
+          </div>
         </div>
       </div>
 

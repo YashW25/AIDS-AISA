@@ -76,47 +76,93 @@ const FormResponsesPage = () => {
     toast.success('CSV downloaded');
   };
 
-  const exportPDF = () => {
+  const hexToRgb = (hex: string): [number, number, number] => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+      ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
+      : [30, 64, 175];
+  };
+
+  const loadImageAsBase64 = (url: string): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject('No context'); return; }
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = () => reject(new Error('Image load failed'));
+      img.src = url;
+    });
+
+  const exportPDF = async () => {
     if (!form || !submissions.length) { toast.error('No responses to export'); return; }
 
-    const doc = new jsPDF('l', 'mm', 'a4'); // landscape for more columns
+    const doc = new jsPDF('l', 'mm', 'a4');
     const pw = doc.internal.pageSize.width;
     const ph = doc.internal.pageSize.height;
     const headerText = form.settings?.header_text || 'AISA Club';
     const subheader = form.settings?.subheader || '';
     const footerText = form.settings?.footer_text || '';
+    const logoUrl = form.settings?.logo_url || '';
+    const headerHex = form.settings?.header_color || '#1e40af';
+    const [r, g, b] = hexToRgb(headerHex);
+
+    // Try loading logo
+    let logoBase64: string | null = null;
+    if (logoUrl) {
+      try { logoBase64 = await loadImageAsBase64(logoUrl); } catch { /* skip */ }
+    }
+
+    const HEADER_H = subheader ? 24 : 20;
 
     const drawHeader = () => {
-      // Header band
-      doc.setFillColor(30, 64, 175); // professional blue
-      doc.rect(0, 0, pw, 22, 'F');
+      // Coloured header band
+      doc.setFillColor(r, g, b);
+      doc.rect(0, 0, pw, HEADER_H, 'F');
+
+      // Logo on the left
+      if (logoBase64) {
+        try { doc.addImage(logoBase64, 'PNG', 5, 2, HEADER_H - 4, HEADER_H - 4); }
+        catch { /* skip if format unsupported */ }
+      }
+
+      const textX = logoBase64 ? pw / 2 + (HEADER_H / 2) : pw / 2;
+
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(13);
-      doc.text(headerText, pw / 2, 10, { align: 'center' });
+      doc.text(headerText, textX, subheader ? 10 : 13, { align: 'center' });
       if (subheader) {
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.text(subheader, pw / 2, 17, { align: 'center' });
+        doc.text(subheader, textX, 18, { align: 'center' });
       }
-      // Form title
+
+      // Form title below header
       doc.setTextColor(20, 20, 20);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
-      doc.text(form.title, pw / 2, 30, { align: 'center' });
+      doc.text(form.title, pw / 2, HEADER_H + 9, { align: 'center' });
+
       if (form.description) {
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(80, 80, 80);
-        doc.text(form.description, pw / 2, 36, { align: 'center' });
+        doc.text(form.description, pw / 2, HEADER_H + 15, { align: 'center' });
       }
-      // Stats line
-      doc.setFontSize(8);
-      doc.setTextColor(100, 100, 100);
+
+      doc.setFontSize(7.5);
+      doc.setTextColor(110, 110, 110);
+      const statsY = HEADER_H + (form.description ? 21 : 15);
       doc.text(
-        `Total Responses: ${submissions.length}  |  Exported: ${new Date().toLocaleString('en-IN')}`,
-        pw / 2, form.description ? 42 : 38,
-        { align: 'center' }
+        `Responses: ${submissions.length}  ·  Exported: ${new Date().toLocaleString('en-IN')}`,
+        pw / 2, statsY, { align: 'center' }
       );
     };
 
@@ -124,14 +170,22 @@ const FormResponsesPage = () => {
       const y = ph - 8;
       doc.setFontSize(7);
       doc.setTextColor(130, 130, 130);
-      doc.setDrawColor(200, 200, 200);
+      doc.setDrawColor(210, 210, 210);
       doc.line(10, y - 3, pw - 10, y - 3);
-      if (footerText) doc.text(footerText, 12, y);
+
+      // Footer left: logo (tiny) + text
+      let footerX = 12;
+      if (logoBase64) {
+        try { doc.addImage(logoBase64, 'PNG', footerX, y - 5, 5, 5); footerX = 19; }
+        catch { /* skip */ }
+      }
+      if (footerText) doc.text(footerText, footerX, y);
       doc.text(`Page ${pageNum}`, pw - 12, y, { align: 'right' });
     };
 
     drawHeader();
 
+    const startY = HEADER_H + (form.description ? 26 : 20);
     const columns = ['#', 'Submitted', ...(form.fields || []).map((f: any) => f.label)];
     const rows = (submissions as any[]).map((s, i) => [
       i + 1,
@@ -145,11 +199,11 @@ const FormResponsesPage = () => {
     autoTable(doc, {
       head: [columns],
       body: rows,
-      startY: form.description ? 47 : 43,
+      startY,
       margin: { left: 10, right: 10 },
-      headStyles: { fillColor: [30, 64, 175], textColor: 255, fontSize: 7, fontStyle: 'bold' },
+      headStyles: { fillColor: [r, g, b], textColor: 255, fontSize: 7, fontStyle: 'bold' },
       bodyStyles: { fontSize: 7, cellPadding: 2 },
-      alternateRowStyles: { fillColor: [245, 247, 255] },
+      alternateRowStyles: { fillColor: [248, 249, 255] },
       columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 28 } },
       didDrawPage: (data: any) => drawFooter(data.pageNumber),
     });
