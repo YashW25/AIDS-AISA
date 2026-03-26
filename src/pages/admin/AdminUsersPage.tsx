@@ -58,11 +58,11 @@ const AdminUsersPage = () => {
         throw new Error('Service role key not configured. Add VITE_SUPABASE_SERVICE_ROLE_KEY to your secrets.');
       }
 
-      // Step 1 — create the auth user via Admin API (no email sent, immediately active)
+      // Step 1 — create the auth user via Admin API (no email sent)
       const { data: userData, error: createError } = await adminClient.auth.admin.createUser({
         email: formData.email,
         password: formData.password,
-        email_confirm: true,          // confirmed immediately — no email
+        email_confirm: true,
         user_metadata: { full_name: formData.full_name },
       });
 
@@ -76,7 +76,10 @@ const AdminUsersPage = () => {
       const userId = userData.user?.id;
       if (!userId) throw new Error('User creation returned no ID.');
 
-      // Step 2 — assign role via SECURITY DEFINER RPC (bypasses RLS)
+      // Step 2 — force-confirm the email via updateUserById (belt-and-suspenders)
+      await adminClient.auth.admin.updateUserById(userId, { email_confirm: true });
+
+      // Step 3 — assign role via SECURITY DEFINER RPC (bypasses RLS)
       const { error: rpcError } = await supabase.rpc('assign_admin_role' as any, {
         p_user_id: userId,
         p_role: formData.role,
@@ -102,20 +105,23 @@ const AdminUsersPage = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      // Remove from admin_profiles (and optionally from auth via admin API)
-      const { error } = await (supabase as any)
-        .from('admin_profiles')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-
-      // Also remove from user_roles
+      await (supabase as any).from('admin_profiles').delete().eq('id', id);
       await supabase.from('user_roles' as any).delete().eq('user_id', id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-profiles-list'] });
       toast.success('Admin removed');
     },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  // Fix "email not confirmed" for existing accounts
+  const fixEmailMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await adminClient.auth.admin.updateUserById(id, { email_confirm: true });
+      if (error) throw new Error(`Could not confirm email: ${error.message}`);
+    },
+    onSuccess: () => toast.success('Email confirmed — they can now log in.'),
     onError: (error: Error) => toast.error(error.message),
   });
 
@@ -200,6 +206,20 @@ const AdminUsersPage = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+                      title="Fix 'email not confirmed' login error"
+                      onClick={() => fixEmailMutation.mutate(admin.id)}
+                      disabled={fixEmailMutation.isPending}
+                    >
+                      {fixEmailMutation.isPending
+                        ? <Loader2 className="h-3 w-3 animate-spin" />
+                        : <ShieldCheck className="h-3 w-3" />}
+                      Fix Login
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -209,6 +229,7 @@ const AdminUsersPage = () => {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
