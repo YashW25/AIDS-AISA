@@ -187,7 +187,7 @@ export const useCharterSettings = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('charter_settings')
-        .select('*')
+        .select('id, title, description, file_url, drive_url')
         .limit(1)
         .maybeSingle();
       if (error) {
