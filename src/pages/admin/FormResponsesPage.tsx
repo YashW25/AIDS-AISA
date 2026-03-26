@@ -84,21 +84,17 @@ const FormResponsesPage = () => {
   };
 
   const loadImageAsBase64 = (url: string): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'Anonymous';
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) { reject('No context'); return; }
-        ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/png'));
-      };
-      img.onerror = () => reject(new Error('Image load failed'));
-      img.src = url;
-    });
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then(blob => new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      }));
 
   const getImgFormat = (dataUrl: string): string => {
     if (dataUrl.includes('image/jpeg') || dataUrl.includes('image/jpg')) return 'JPEG';
