@@ -55,6 +55,8 @@ import CustomPagesPage from "./pages/admin/CustomPagesPage";
 import CustomPage from "./pages/CustomPage";
 import DatabaseSetupPage from "./pages/admin/DatabaseSetupPage";
 import ThemeSettingsPage from "./pages/admin/ThemeSettingsPage";
+import MessageAdminPage from "./pages/admin/MessageAdminPage";
+import TeacherMessagesPage from "./pages/admin/TeacherMessagesPage";
 
 const queryClient = new QueryClient();
 
@@ -118,6 +120,8 @@ const App = () => (
                   <Route path="pages" element={<CustomPagesPage />} />
                   <Route path="setup" element={<DatabaseSetupPage />} />
                   <Route path="theme" element={<ThemeSettingsPage />} />
+                  <Route path="message-admin" element={<MessageAdminPage />} />
+                  <Route path="teacher-messages" element={<TeacherMessagesPage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>

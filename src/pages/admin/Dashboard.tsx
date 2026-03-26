@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Image, Users, Calendar, Settings, LogOut, 
-  Menu, X, GraduationCap, Megaphone, ChevronDown, ChevronRight, ImageIcon, Handshake, UserCog, User, BarChart3,
-  ClipboardList, Award, Bell, Download, Newspaper, ScrollText, MessageSquare, Database, BookUser
+  Menu, X, GraduationCap, Megaphone, ChevronDown, ChevronRight, ImageIcon, 
+  Handshake, UserCog, User, BarChart3, ClipboardList, Award, Bell, Download, 
+  Newspaper, ScrollText, MessageSquare, Database, BookUser, SendHorizonal, Inbox,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,28 +12,22 @@ import { toast } from 'sonner';
 import { useSiteSettings } from '@/hooks/useSiteData';
 import { cn } from '@/lib/utils';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
 import { Layers, Navigation, FilePlus, Palette } from 'lucide-react';
 
 type SideNavItem = {
   label: string;
   href: string;
   icon: any;
+  adminOnly?: boolean;
   children?: { label: string; href: string; icon: any }[];
 };
 
-const navItems: SideNavItem[] = [
+// Items shown to BOTH admin and teacher
+const sharedNavItems: SideNavItem[] = [
   { label: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
-  { label: 'Site Settings', href: '/admin/dashboard/settings', icon: Settings },
-  { label: 'Color Schema', href: '/admin/dashboard/theme', icon: Palette },
-  { label: 'Navigation', href: '/admin/dashboard/navigation', icon: Navigation },
-  { label: 'Custom Pages', href: '/admin/dashboard/pages', icon: FilePlus },
   { label: 'Announcements', href: '/admin/dashboard/announcements', icon: Megaphone },
   { label: 'Popup Banners', href: '/admin/dashboard/popups', icon: Bell },
   { label: 'Hero Slider', href: '/admin/dashboard/slides', icon: Image },
@@ -46,7 +41,6 @@ const navItems: SideNavItem[] = [
     { label: 'Categories', href: '/admin/dashboard/team-categories', icon: Layers },
   ]},
   { label: 'Gallery', href: '/admin/dashboard/gallery', icon: ImageIcon },
-  { label: 'Partners', href: '/admin/dashboard/partners', icon: Handshake },
   { label: 'Students', href: '/admin/dashboard/students', icon: BookUser, children: [
     { label: 'Student Records', href: '/admin/dashboard/students', icon: BookUser },
     { label: 'Alumni', href: '/admin/dashboard/alumni', icon: GraduationCap },
@@ -55,8 +49,23 @@ const navItems: SideNavItem[] = [
   { label: 'Notice', href: '/admin/dashboard/news', icon: Newspaper },
   { label: 'Downloads', href: '/admin/dashboard/downloads', icon: Download },
   { label: 'Contact Messages', href: '/admin/dashboard/contact', icon: MessageSquare },
+];
+
+// Extra items only for ADMIN
+const adminOnlyNavItems: SideNavItem[] = [
+  { label: 'Site Settings', href: '/admin/dashboard/settings', icon: Settings },
+  { label: 'Color Schema', href: '/admin/dashboard/theme', icon: Palette },
+  { label: 'Navigation', href: '/admin/dashboard/navigation', icon: Navigation },
+  { label: 'Custom Pages', href: '/admin/dashboard/pages', icon: FilePlus },
+  { label: 'Partners', href: '/admin/dashboard/partners', icon: Handshake },
   { label: 'Admin Users', href: '/admin/dashboard/admins', icon: UserCog },
+  { label: 'Teacher Messages', href: '/admin/dashboard/teacher-messages', icon: Inbox },
   { label: 'Database Setup', href: '/admin/dashboard/setup', icon: Database },
+];
+
+// Extra item only for TEACHER (at the bottom)
+const teacherOnlyNavItems: SideNavItem[] = [
+  { label: 'Message Admin', href: '/admin/dashboard/message-admin', icon: SendHorizonal },
 ];
 
 const AdminDashboard = () => {
@@ -65,23 +74,29 @@ const AdminDashboard = () => {
   const { data: settings } = useSiteSettings();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string>('admin'); // 'admin' | 'teacher' | 'super_admin'
   const [expandedNavs, setExpandedNavs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/auth');
-        return;
-      }
+      if (!session) { navigate('/auth'); return; }
       setUser(session.user);
+
+      // Fetch role to determine which nav to show
+      const { data: roleData } = await supabase
+        .from('user_roles' as any)
+        .select('role')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+      const role = (roleData as any)?.role || 'admin';
+      setUserRole(role);
     };
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) navigate('/auth');
     });
-
     return () => subscription.unsubscribe();
   }, [navigate]);
 
@@ -89,6 +104,71 @@ const AdminDashboard = () => {
     await supabase.auth.signOut();
     toast.success('Logged out successfully');
     navigate('/auth');
+  };
+
+  const isTeacher = userRole === 'teacher' || userRole === 'editor';
+  const isAdmin = !isTeacher; // admin, super_admin
+
+  // Build the nav list based on role
+  const navItems: SideNavItem[] = isTeacher
+    ? [...sharedNavItems, ...teacherOnlyNavItems]
+    : [...sharedNavItems, ...adminOnlyNavItems];
+
+  const renderNavItem = (item: SideNavItem) => {
+    if (item.children) {
+      const isParentActive = item.children.some(c => location.pathname === c.href);
+      const isExpanded = expandedNavs.has(item.label) || isParentActive;
+      return (
+        <div key={item.label}>
+          <button
+            onClick={() => {
+              setExpandedNavs(prev => {
+                const next = new Set(prev);
+                if (next.has(item.label)) next.delete(item.label); else next.add(item.label);
+                return next;
+              });
+            }}
+            className={cn(
+              "flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+              isParentActive ? "text-foreground bg-muted" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}>
+            <span className="flex items-center gap-3">
+              <item.icon className="h-5 w-5" />
+              {item.label}
+            </span>
+            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </button>
+          {isExpanded && (
+            <div className="ml-6 space-y-1 mt-1">
+              {item.children.map((child) => (
+                <Link key={child.href} to={child.href} onClick={() => setSidebarOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                    location.pathname === child.href
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}>
+                  <child.icon className="h-4 w-4" />
+                  {child.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+    return (
+      <Link key={item.href} to={item.href} onClick={() => setSidebarOpen(false)}
+        className={cn(
+          "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+          location.pathname === item.href
+            ? "bg-primary text-primary-foreground"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        )}>
+        <item.icon className="h-5 w-5" />
+        {item.label}
+      </Link>
+    );
   };
 
   return (
@@ -101,41 +181,42 @@ const AdminDashboard = () => {
             </button>
             <Link to="/" className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg gradient-primary">
-                {settings?.logo_url ? (
-                  <img src={settings.logo_url} alt={settings.club_name} className="h-8 w-8 object-contain" />
-                ) : (
-                  <GraduationCap className="h-6 w-6 text-primary-foreground" />
-                )}
+                {settings?.logo_url
+                  ? <img src={settings.logo_url} alt={settings.club_name} className="h-8 w-8 object-contain" />
+                  : <GraduationCap className="h-6 w-6 text-primary-foreground" />}
               </div>
               <div className="hidden sm:block">
                 <span className="font-display text-lg font-bold text-foreground">
                   {settings?.club_name || 'Admin'}
                 </span>
-                <span className="text-xs text-muted-foreground block">Admin Dashboard</span>
+                <span className="text-xs text-muted-foreground block">
+                  {isTeacher ? 'Teacher Panel' : 'Admin Dashboard'}
+                </span>
               </div>
             </Link>
           </div>
 
           <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button variant="outline" size="sm">View Site</Button>
-            </Link>
+            <Link to="/"><Button variant="outline" size="sm">View Site</Button></Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="gap-2">
                   <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-sm font-medium text-primary-foreground">
-                    {user?.email?.[0].toUpperCase()}
+                    {user?.email?.[0]?.toUpperCase()}
                   </div>
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem className="text-muted-foreground">{user?.email}</DropdownMenuItem>
+                <DropdownMenuItem className="text-muted-foreground text-xs">{user?.email}</DropdownMenuItem>
+                <DropdownMenuItem className="text-muted-foreground text-xs capitalize">
+                  Role: {userRole}
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate('/admin/dashboard/profile')}>
                   <User className="h-4 w-4 mr-2" />Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="h-4 w-4 mr-2" />Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -150,67 +231,21 @@ const AdminDashboard = () => {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}>
           <nav className="p-4 space-y-1 pb-8">
-            {navItems.map((item) => {
-              if (item.children) {
-                const isParentActive = item.children.some(c => location.pathname === c.href);
-                const isExpanded = expandedNavs.has(item.label) || isParentActive;
-                return (
-                  <div key={item.label}>
-                    <button
-                      onClick={() => {
-                        setExpandedNavs(prev => {
-                          const next = new Set(prev);
-                          if (next.has(item.label)) next.delete(item.label);
-                          else next.add(item.label);
-                          return next;
-                        });
-                      }}
-                      className={cn(
-                        "flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                        isParentActive ? "text-foreground bg-muted" : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                      )}>
-                      <span className="flex items-center gap-3">
-                        <item.icon className="h-5 w-5" />
-                        {item.label}
-                      </span>
-                      {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </button>
-                    {isExpanded && (
-                      <div className="ml-6 space-y-1 mt-1">
-                        {item.children.map((child) => (
-                          <Link key={child.href} to={child.href} onClick={() => setSidebarOpen(false)}
-                            className={cn(
-                              "flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                              location.pathname === child.href
-                                ? "bg-primary text-primary-foreground"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                            )}>
-                            <child.icon className="h-4 w-4" />
-                            {child.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-              return (
-                <Link key={item.href} to={item.href} onClick={() => setSidebarOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                    location.pathname === item.href
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}>
-                  <item.icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
-              );
-            })}
+            {/* Role badge */}
+            <div className={cn(
+              "mb-3 px-3 py-1.5 rounded-md text-xs font-semibold tracking-wide",
+              isTeacher ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" : "bg-primary/10 text-primary"
+            )}>
+              {isTeacher ? '👩‍🏫 Teacher Panel' : '🛡️ Admin Panel'}
+            </div>
+
+            {navItems.map(renderNavItem)}
           </nav>
         </aside>
 
-        {sidebarOpen && <div className="fixed inset-0 z-20 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-20 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        )}
 
         <main className="flex-1 lg:ml-64 p-6">
           <Outlet />
