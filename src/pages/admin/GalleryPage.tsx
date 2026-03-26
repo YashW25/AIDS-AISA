@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { Loader2, Image as ImageIcon, FolderOpen, Link2 } from 'lucide-react';
+import { Loader2, Image as ImageIcon, FolderOpen, Link2, CalendarDays, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -268,7 +268,7 @@ const GalleryPage = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3">
           <TabsTrigger value="gallery" className="gap-2">
             <ImageIcon className="w-4 h-4" />
             Photo Gallery
@@ -276,6 +276,13 @@ const GalleryPage = () => {
           <TabsTrigger value="occasions" className="gap-2">
             <FolderOpen className="w-4 h-4" />
             Occasions
+          </TabsTrigger>
+          <TabsTrigger value="from-events" className="gap-2">
+            <CalendarDays className="w-4 h-4" />
+            From Events
+            {eventsWithGallery > 0 && (
+              <span className="ml-1 bg-green-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold">{eventsWithGallery}</span>
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -355,6 +362,65 @@ const GalleryPage = () => {
             onToggleActive={handleOccasionToggleActive}
             isLoading={occasionLoading}
           />
+        </TabsContent>
+
+        {/* From Events Tab */}
+        <TabsContent value="from-events" className="space-y-4">
+          <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-950/20 dark:border-blue-900">
+            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">Auto-Linked from Events</p>
+              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                Any event with a Google Drive folder link is <strong>automatically shown</strong> in the public Gallery page under the "Events" tab. To add or change a Drive link, edit the event from the <strong>Events</strong> admin page.
+              </p>
+            </div>
+          </div>
+
+          {events.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <CalendarDays className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <p>No events found</p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Event</th>
+                    <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Date</th>
+                    <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Type</th>
+                    <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Gallery Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {events.map((event) => (
+                    <tr key={event.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-3 font-medium text-foreground">{event.title}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {event.event_date ? format(new Date(event.event_date), 'MMM dd, yyyy') : '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="capitalize px-2 py-1 rounded bg-primary/10 text-primary text-xs">{event.event_type}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {event.drive_folder_link ? (
+                          <span className="text-green-600 text-xs flex items-center gap-1.5 font-medium">
+                            <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+                            Showing in Gallery
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-xs flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-muted-foreground/40 inline-block" />
+                            No Drive link — not in Gallery
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 

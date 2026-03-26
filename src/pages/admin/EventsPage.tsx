@@ -191,10 +191,16 @@ const EventsPage = () => {
               fileName={watch('title') || ''}
             />
           </div>
-          <DriveFolderInput
-            value={watch('drive_folder_link') || ''}
-            onChange={(url) => setValue('drive_folder_link', url)}
-          />
+          <div className="space-y-2">
+            <DriveFolderInput
+              value={watch('drive_folder_link') || ''}
+              onChange={(url) => setValue('drive_folder_link', url)}
+            />
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5 pt-1">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+              Adding a Drive link will automatically display this event's photos in the public <strong>Gallery</strong> page.
+            </p>
+          </div>
           <div className="flex justify-end gap-4">
             <Button type="button" variant="outline" onClick={closeModal} disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}>Cancel</Button>
             <Button type="submit" disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}>
