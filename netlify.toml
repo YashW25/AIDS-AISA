@@ -10,6 +10,13 @@
   path = "/*"
   function = "og-tags"
 
+# www → non-www canonical redirect (301 permanent)
+[[redirects]]
+  from = "https://www.aisaclub.isbmcoe.in/*"
+  to = "https://aisaclub.isbmcoe.in/:splat"
+  status = 301
+  force = true
+
 # SPA routing — all paths serve index.html so React Router handles navigation
 [[redirects]]
   from = "/*"
