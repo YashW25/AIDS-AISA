@@ -100,112 +100,191 @@ const FormResponsesPage = () => {
       img.src = url;
     });
 
+  const getImgFormat = (dataUrl: string): string => {
+    if (dataUrl.includes('image/jpeg') || dataUrl.includes('image/jpg')) return 'JPEG';
+    if (dataUrl.includes('image/gif')) return 'GIF';
+    return 'PNG';
+  };
+
   const exportPDF = async () => {
     if (!form || !submissions.length) { toast.error('No responses to export'); return; }
 
-    const doc = new jsPDF('l', 'mm', 'a4');
-    const pw = doc.internal.pageSize.width;
-    const ph = doc.internal.pageSize.height;
-    const headerText = form.settings?.header_text || 'AISA Club';
-    const subheader = form.settings?.subheader || '';
-    const footerText = form.settings?.footer_text || '';
-    const logoUrl = form.settings?.logo_url || '';
-    const headerHex = form.settings?.header_color || '#1e40af';
-    const [r, g, b] = hexToRgb(headerHex);
+    // ── Settings ──────────────────────────────────────────────────────────
+    const orgName       = form.settings?.org_name       || '';
+    const headerText    = form.settings?.header_text    || '';
+    const affiliationText = form.settings?.subheader    || '';
+    const logoUrl       = form.settings?.logo_url       || '';
+    const logoUrlRight  = form.settings?.logo_url_right || '';
+    const accentHex     = form.settings?.accent_color   || form.settings?.header_color || '#dc2626';
+    const footerEmail   = form.settings?.footer_email   || '';
+    const footerWebsite = form.settings?.footer_website || '';
+    const footerPhone   = form.settings?.footer_phone   || '';
+    const [r, g, b]     = hexToRgb(accentHex);
 
-    // Try loading logo
-    let logoBase64: string | null = null;
-    if (logoUrl) {
-      try { logoBase64 = await loadImageAsBase64(logoUrl); } catch { /* skip */ }
-    }
+    // ── Load logos ────────────────────────────────────────────────────────
+    let logoLeft:  string | null = null;
+    let logoRight: string | null = null;
+    if (logoUrl)      try { logoLeft  = await loadImageAsBase64(logoUrl);      } catch { /* skip */ }
+    if (logoUrlRight) try { logoRight = await loadImageAsBase64(logoUrlRight); } catch { /* skip */ }
 
-    const HEADER_H = subheader ? 24 : 20;
+    // ── Doc setup ─────────────────────────────────────────────────────────
+    const doc = new jsPDF('p', 'mm', 'a4');   // portrait A4
+    const pw  = doc.internal.pageSize.width;   // 210 mm
+    const ph  = doc.internal.pageSize.height;  // 297 mm
+    const LM  = 15;   // left margin
+    const RM  = pw - 15; // right margin (195)
+    const CW  = RM - LM; // content width (180)
+    const CX  = pw / 2;  // centre x (105)
 
+    // ── Fixed Y positions ─────────────────────────────────────────────────
+    const LOGO_Y     = 8;
+    const LOGO_SIZE  = 22;
+    const DIVIDER_Y  = 35;   // red accent line
+    const TITLE_Y    = DIVIDER_Y + 9;
+    const SUBTITLE_Y = DIVIDER_Y + 17;
+    const STATS_Y    = DIVIDER_Y + 24;  // top of stats box
+    const STATS_H    = 9;
+    const TABLE_Y    = STATS_Y + STATS_H + 3;
+    const MARGIN_TOP_P2 = DIVIDER_Y + 24; // page 2+ table start (no stats box)
+    const FOOTER_LINE_Y = ph - 16;
+    const FOOTER_TEXT_Y = ph - 10;
+
+    // ── drawHeader: white letterhead top, red divider, title block ────────
     const drawHeader = () => {
-      // Coloured header band
-      doc.setFillColor(r, g, b);
-      doc.rect(0, 0, pw, HEADER_H, 'F');
+      // White background for logo/text area
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, pw, DIVIDER_Y, 'F');
 
-      // Logo on the left
-      if (logoBase64) {
-        try { doc.addImage(logoBase64, 'PNG', 5, 2, HEADER_H - 4, HEADER_H - 4); }
-        catch { /* skip if format unsupported */ }
+      // Left logo
+      if (logoLeft) {
+        try { doc.addImage(logoLeft, getImgFormat(logoLeft), LM, LOGO_Y, LOGO_SIZE, LOGO_SIZE); } catch { /* skip */ }
+      }
+      // Right logo
+      if (logoRight) {
+        try { doc.addImage(logoRight, getImgFormat(logoRight), RM - LOGO_SIZE, LOGO_Y, LOGO_SIZE, LOGO_SIZE); } catch { /* skip */ }
       }
 
-      const textX = logoBase64 ? pw / 2 + (HEADER_H / 2) : pw / 2;
-
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(13);
-      doc.text(headerText, textX, subheader ? 10 : 13, { align: 'center' });
-      if (subheader) {
+      // Centre institution text
+      let ty = 12;
+      if (orgName) {
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
+        doc.setTextColor(50, 50, 50);
+        doc.text(orgName.toUpperCase(), CX, ty, { align: 'center' });
+        ty += 5.5;
+      }
+      if (headerText) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11.5);
+        doc.setTextColor(15, 15, 15);
+        doc.text(headerText.toUpperCase(), CX, ty, { align: 'center' });
+        ty += 5;
+      }
+      if (affiliationText) {
         doc.setFont('helvetica', 'normal');
-        doc.text(subheader, textX, 18, { align: 'center' });
+        doc.setFontSize(7);
+        doc.setTextColor(90, 90, 90);
+        const lines = doc.splitTextToSize(affiliationText, 130);
+        doc.text(lines, CX, ty, { align: 'center' });
       }
 
-      // Form title below header
-      doc.setTextColor(20, 20, 20);
+      // Red accent divider line
+      doc.setFillColor(r, g, b);
+      doc.rect(0, DIVIDER_Y, pw, 1.5, 'F');
+
+      // Form title (coloured, uppercase)
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
-      doc.text(form.title, pw / 2, HEADER_H + 9, { align: 'center' });
+      doc.setTextColor(r, g, b);
+      doc.text(form.title.toUpperCase(), CX, TITLE_Y, { align: 'center' });
 
-      if (form.description) {
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(80, 80, 80);
-        doc.text(form.description, pw / 2, HEADER_H + 15, { align: 'center' });
-      }
-
-      doc.setFontSize(7.5);
-      doc.setTextColor(110, 110, 110);
-      const statsY = HEADER_H + (form.description ? 21 : 15);
-      doc.text(
-        `Responses: ${submissions.length}  ·  Exported: ${new Date().toLocaleString('en-IN')}`,
-        pw / 2, statsY, { align: 'center' }
-      );
+      // Report subtitle
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(20, 20, 20);
+      doc.text('FORM RESPONSES REPORT', CX, SUBTITLE_Y, { align: 'center' });
     };
 
+    // ── drawFooter ────────────────────────────────────────────────────────
     const drawFooter = (pageNum: number) => {
-      const y = ph - 8;
-      doc.setFontSize(7);
-      doc.setTextColor(130, 130, 130);
-      doc.setDrawColor(210, 210, 210);
-      doc.line(10, y - 3, pw - 10, y - 3);
+      // Accent colour footer line
+      doc.setFillColor(r, g, b);
+      doc.rect(0, FOOTER_LINE_Y, pw, 1, 'F');
 
-      // Footer left: logo (tiny) + text
-      let footerX = 12;
-      if (logoBase64) {
-        try { doc.addImage(logoBase64, 'PNG', footerX, y - 5, 5, 5); footerX = 19; }
-        catch { /* skip */ }
+      // Contact info centred
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(60, 60, 60);
+      const parts: string[] = [];
+      if (footerEmail)   parts.push(`Email: ${footerEmail}`);
+      if (footerWebsite) parts.push(`Website: ${footerWebsite}`);
+      if (footerPhone)   parts.push(`Phone: ${footerPhone}`);
+      if (parts.length) {
+        doc.text(parts.join('   |   '), CX, FOOTER_TEXT_Y, { align: 'center' });
       }
-      if (footerText) doc.text(footerText, footerX, y);
-      doc.text(`Page ${pageNum}`, pw - 12, y, { align: 'right' });
+      // Page number right-aligned
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Page ${pageNum}`, RM, FOOTER_TEXT_Y, { align: 'right' });
     };
 
+    // ── Page 1 header + stats box ─────────────────────────────────────────
     drawHeader();
 
-    const startY = HEADER_H + (form.description ? 26 : 20);
+    // Stats box
+    doc.setDrawColor(180, 180, 180);
+    doc.setFillColor(248, 248, 248);
+    doc.rect(LM, STATS_Y, CW, STATS_H, 'FD');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(40, 40, 40);
+    const exportDate = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+    doc.text(
+      `Total: ${submissions.length} ${submissions.length === 1 ? 'response' : 'responses'}   |   Exported: ${exportDate}`,
+      LM + 4, STATS_Y + 6
+    );
+
+    // ── Table ─────────────────────────────────────────────────────────────
     const columns = ['#', 'Submitted', ...(form.fields || []).map((f: any) => f.label)];
     const rows = (submissions as any[]).map((s, i) => [
       i + 1,
       new Date(s.submitted_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }),
       ...(form.fields || []).map((f: any) => {
         const v = getCellValue(s.responses, f.id);
-        return String(v).length > 40 ? String(v).slice(0, 38) + '…' : String(v);
+        const str = String(v ?? '');
+        return str.length > 60 ? str.slice(0, 58) + '…' : str;
       }),
     ]);
 
     autoTable(doc, {
       head: [columns],
       body: rows,
-      startY,
-      margin: { left: 10, right: 10 },
-      headStyles: { fillColor: [r, g, b], textColor: 255, fontSize: 7, fontStyle: 'bold' },
-      bodyStyles: { fontSize: 7, cellPadding: 2 },
-      alternateRowStyles: { fillColor: [248, 249, 255] },
-      columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 28 } },
-      didDrawPage: (data: any) => drawFooter(data.pageNumber),
+      startY: TABLE_Y,
+      margin: { top: MARGIN_TOP_P2, left: LM, right: LM, bottom: 22 },
+      headStyles: {
+        fillColor: [r, g, b],
+        textColor: [255, 255, 255],
+        fontSize: 8,
+        fontStyle: 'bold',
+        halign: 'center',
+        lineColor: [r, g, b],
+        lineWidth: 0.3,
+      },
+      bodyStyles: {
+        fontSize: 8,
+        cellPadding: 2.8,
+        lineColor: [180, 180, 180],
+        lineWidth: 0.3,
+        textColor: [30, 30, 30],
+      },
+      tableLineColor: [180, 180, 180],
+      tableLineWidth: 0.3,
+      alternateRowStyles: { fillColor: [255, 255, 255] },
+      columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 30 } },
+      didDrawPage: (data: any) => {
+        if (data.pageNumber > 1) drawHeader();
+        drawFooter(data.pageNumber);
+      },
     });
 
     doc.save(`${form.title.toLowerCase().replace(/\s+/g, '-')}-responses.pdf`);

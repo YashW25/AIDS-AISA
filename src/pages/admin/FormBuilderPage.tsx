@@ -52,11 +52,18 @@ const FormBuilderPage = () => {
   const [slug, setSlug] = useState('');
   const [isPublished, setIsPublished] = useState(false);
   const [allowMultiple, setAllowMultiple] = useState(true);
-  const [headerText, setHeaderText] = useState('AISA Club');
+  // PDF letterhead fields
+  const [orgName, setOrgName] = useState('');
+  const [headerText, setHeaderText] = useState('');
   const [subheader, setSubheader] = useState('');
-  const [footerText, setFooterText] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
-  const [headerColor, setHeaderColor] = useState('#1e40af');
+  const [logoUrlRight, setLogoUrlRight] = useState('');
+  const [accentColor, setAccentColor] = useState('#dc2626');
+  const [footerEmail, setFooterEmail] = useState('');
+  const [footerWebsite, setFooterWebsite] = useState('');
+  const [footerPhone, setFooterPhone] = useState('');
+  // kept for legacy compat
+  const [footerText, setFooterText] = useState('');
   const [fields, setFields] = useState<FormField[]>([]);
   const [fieldModalOpen, setFieldModalOpen] = useState(false);
   const [editingField, setEditingField] = useState<FormField | null>(null);
@@ -80,11 +87,16 @@ const FormBuilderPage = () => {
       setSlug(existingForm.slug);
       setIsPublished(existingForm.is_published);
       setAllowMultiple(existingForm.settings?.allow_multiple !== false);
-      setHeaderText(existingForm.settings?.header_text || 'AISA Club');
+      setOrgName(existingForm.settings?.org_name || '');
+      setHeaderText(existingForm.settings?.header_text || '');
       setSubheader(existingForm.settings?.subheader || '');
-      setFooterText(existingForm.settings?.footer_text || '');
       setLogoUrl(existingForm.settings?.logo_url || '');
-      setHeaderColor(existingForm.settings?.header_color || '#1e40af');
+      setLogoUrlRight(existingForm.settings?.logo_url_right || '');
+      setAccentColor(existingForm.settings?.accent_color || existingForm.settings?.header_color || '#dc2626');
+      setFooterEmail(existingForm.settings?.footer_email || '');
+      setFooterWebsite(existingForm.settings?.footer_website || '');
+      setFooterPhone(existingForm.settings?.footer_phone || '');
+      setFooterText(existingForm.settings?.footer_text || '');
       setFields(existingForm.fields || []);
     }
   }, [existingForm]);
@@ -129,11 +141,16 @@ const FormBuilderPage = () => {
         fields,
         settings: {
           allow_multiple: allowMultiple,
-          header_text: headerText,
-          subheader,
-          footer_text: footerText,
+          org_name: orgName.trim(),
+          header_text: headerText.trim(),
+          subheader: subheader.trim(),
           logo_url: logoUrl.trim(),
-          header_color: headerColor,
+          logo_url_right: logoUrlRight.trim(),
+          accent_color: accentColor,
+          footer_email: footerEmail.trim(),
+          footer_website: footerWebsite.trim(),
+          footer_phone: footerPhone.trim(),
+          footer_text: footerText.trim(),
         },
         updated_at: new Date().toISOString(),
       };
@@ -288,90 +305,97 @@ const FormBuilderPage = () => {
       </div>
 
       {/* PDF Letterhead Settings */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">PDF Export Design</h2>
-        <p className="text-xs text-muted-foreground">Customise the header and footer shown on exported PDF responses.</p>
-
-        {/* Logo + Color row */}
-        <div className="grid grid-cols-[1fr_auto] gap-4 items-end">
-          <div className="space-y-2">
-            <Label>Logo URL (optional)</Label>
-            <Input
-              value={logoUrl}
-              onChange={e => setLogoUrl(e.target.value)}
-              placeholder="https://example.com/logo.png"
-            />
-            <p className="text-xs text-muted-foreground">Paste a public image URL — the logo appears on the left of the PDF header.</p>
-          </div>
-          <div className="space-y-2">
-            <Label>Header Colour</Label>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={headerColor}
-                onChange={e => setHeaderColor(e.target.value)}
-                className="h-9 w-12 rounded border border-border cursor-pointer p-0.5"
-              />
-              <Input
-                value={headerColor}
-                onChange={e => setHeaderColor(e.target.value)}
-                className="w-28 font-mono text-sm"
-                maxLength={7}
-              />
-            </div>
-          </div>
+      <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+        <div>
+          <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">PDF Letterhead Design</h2>
+          <p className="text-xs text-muted-foreground mt-1">Matches the official ISBM letterhead format — logos, institution text, and contact footer.</p>
         </div>
 
-        {/* Logo preview */}
-        {logoUrl && (
-          <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30">
-            <img
-              src={logoUrl}
-              alt="Logo preview"
-              className="h-10 w-10 object-contain rounded"
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-            <p className="text-xs text-muted-foreground">Logo preview — make sure it's publicly accessible</p>
-          </div>
-        )}
-
+        {/* LOGOS */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Header Text (Institution Name)</Label>
-            <Input value={headerText} onChange={e => setHeaderText(e.target.value)} placeholder="e.g. ISBM College of Engineering" />
+            <Label>Left Logo URL</Label>
+            <Input value={logoUrl} onChange={e => setLogoUrl(e.target.value)} placeholder="https://example.com/left-logo.png" />
+            {logoUrl && <img src={logoUrl} alt="" className="h-10 object-contain rounded mt-1" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
           </div>
           <div className="space-y-2">
-            <Label>Subheader</Label>
-            <Input value={subheader} onChange={e => setSubheader(e.target.value)} placeholder="e.g. Academic Year 2024-25" />
+            <Label>Right Logo URL</Label>
+            <Input value={logoUrlRight} onChange={e => setLogoUrlRight(e.target.value)} placeholder="https://example.com/right-logo.png" />
+            {logoUrlRight && <img src={logoUrlRight} alt="" className="h-10 object-contain rounded mt-1" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
           </div>
-        </div>
-        <div className="space-y-2">
-          <Label>Footer Text</Label>
-          <Input value={footerText} onChange={e => setFooterText(e.target.value)} placeholder="e.g. Confidential — For internal use only" />
         </div>
 
-        {/* PDF preview bar */}
-        <div className="rounded-lg overflow-hidden border border-border">
-          <div
-            className="flex items-center gap-3 px-4 py-3"
-            style={{ backgroundColor: headerColor }}
-          >
-            {logoUrl && (
-              <img
-                src={logoUrl}
-                alt="Logo"
-                className="h-8 w-8 object-contain rounded shrink-0"
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-sm truncate">{headerText || 'Header Text'}</p>
-              {subheader && <p className="text-white/80 text-xs truncate">{subheader}</p>}
+        {/* INSTITUTION TEXT */}
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label>Organisation / Trust Name <span className="text-muted-foreground font-normal">(top small line)</span></Label>
+            <Input value={orgName} onChange={e => setOrgName(e.target.value)} placeholder="e.g. PEOPLES EMPOWERMENT GROUP" />
+          </div>
+          <div className="space-y-2">
+            <Label>Institution Name <span className="text-muted-foreground font-normal">(main bold line)</span></Label>
+            <Input value={headerText} onChange={e => setHeaderText(e.target.value)} placeholder="e.g. ISBM COLLEGE OF ENGINEERING, NANDE, PUNE" />
+          </div>
+          <div className="space-y-2">
+            <Label>Affiliation / Subtitle <span className="text-muted-foreground font-normal">(small text below)</span></Label>
+            <Input value={subheader} onChange={e => setSubheader(e.target.value)} placeholder="e.g. Affiliated to Savitribai Phule Pune University | Approved by AICTE" />
+          </div>
+        </div>
+
+        {/* ACCENT COLOR */}
+        <div className="space-y-2">
+          <Label>Accent Colour <span className="text-muted-foreground font-normal">(divider line, title, table header)</span></Label>
+          <div className="flex items-center gap-3">
+            <input type="color" value={accentColor} onChange={e => setAccentColor(e.target.value)} className="h-9 w-12 rounded border border-border cursor-pointer p-0.5" />
+            <Input value={accentColor} onChange={e => setAccentColor(e.target.value)} className="w-28 font-mono text-sm" maxLength={7} />
+            <div className="h-9 flex-1 rounded border border-border" style={{ backgroundColor: accentColor }} />
+          </div>
+        </div>
+
+        {/* FOOTER CONTACT */}
+        <div className="space-y-3">
+          <Label className="block">Footer Contact Info</Label>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Email</Label>
+              <Input value={footerEmail} onChange={e => setFooterEmail(e.target.value)} placeholder="info@college.edu" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Website</Label>
+              <Input value={footerWebsite} onChange={e => setFooterWebsite(e.target.value)} placeholder="www.college.edu" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Phone</Label>
+              <Input value={footerPhone} onChange={e => setFooterPhone(e.target.value)} placeholder="+91 XXXXX XXXXX" />
             </div>
           </div>
-          <div className="bg-muted/20 px-4 py-2 flex justify-between items-center border-t border-border">
-            <p className="text-xs text-muted-foreground truncate">{footerText || 'Footer text...'}</p>
-            <p className="text-xs text-muted-foreground">Page 1</p>
+        </div>
+
+        {/* Live letterhead preview */}
+        <div className="rounded-lg overflow-hidden border border-border text-xs">
+          <div className="bg-white dark:bg-zinc-900 p-3">
+            <div className="flex items-center justify-between gap-2">
+              {logoUrl
+                ? <img src={logoUrl} alt="" className="h-8 w-8 object-contain shrink-0" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                : <div className="h-8 w-8 rounded border border-dashed border-border bg-muted/30" />}
+              <div className="flex-1 text-center px-2">
+                {orgName && <p className="font-semibold text-[10px] text-foreground uppercase tracking-wide">{orgName}</p>}
+                {headerText && <p className="font-bold text-[11px] text-foreground uppercase">{headerText}</p>}
+                {subheader && <p className="text-[8px] text-muted-foreground mt-0.5">{subheader}</p>}
+              </div>
+              {logoUrlRight
+                ? <img src={logoUrlRight} alt="" className="h-8 w-8 object-contain shrink-0" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                : <div className="h-8 w-8 rounded border border-dashed border-border bg-muted/30" />}
+            </div>
+          </div>
+          <div className="h-1" style={{ backgroundColor: accentColor }} />
+          <div className="bg-white dark:bg-zinc-900 text-center py-1.5 px-3">
+            <p className="font-bold text-[9px] uppercase" style={{ color: accentColor }}>{title || 'Form Title'}</p>
+            <p className="font-bold text-[9px] uppercase text-foreground mt-0.5">Form Responses Report</p>
+          </div>
+          <div className="h-px" style={{ backgroundColor: accentColor }} />
+          <div className="bg-white dark:bg-zinc-900 px-3 py-1.5 flex justify-between items-center text-[8px] text-muted-foreground">
+            {[footerEmail && `✉ ${footerEmail}`, footerWebsite && `⌘ ${footerWebsite}`, footerPhone && `✆ ${footerPhone}`].filter(Boolean).join('  |  ') || '✉ email@college.edu  |  ⌘ www.college.edu  |  ✆ +91 XXXXX XXXXX'}
+            <span>Page 1</span>
           </div>
         </div>
       </div>
