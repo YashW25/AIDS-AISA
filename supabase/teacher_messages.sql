@@ -15,6 +15,11 @@ CREATE TABLE IF NOT EXISTS public.teacher_messages (
 -- Enable Row Level Security
 ALTER TABLE public.teacher_messages ENABLE ROW LEVEL SECURITY;
 
+-- Drop old policies if re-running this script
+DROP POLICY IF EXISTS "teachers_can_send" ON public.teacher_messages;
+DROP POLICY IF EXISTS "teachers_view_own" ON public.teacher_messages;
+DROP POLICY IF EXISTS "admins_full_access" ON public.teacher_messages;
+
 -- Teachers can INSERT their own messages
 CREATE POLICY "teachers_can_send"
   ON public.teacher_messages FOR INSERT
@@ -27,7 +32,7 @@ CREATE POLICY "teachers_view_own"
   TO authenticated
   USING (auth.uid() = teacher_id);
 
--- Admins / super_admins can do everything
+-- Admins can do everything (use 'admin'::app_role — super_admin is stored as 'admin')
 CREATE POLICY "admins_full_access"
   ON public.teacher_messages FOR ALL
   TO authenticated
@@ -35,14 +40,14 @@ CREATE POLICY "admins_full_access"
     EXISTS (
       SELECT 1 FROM public.user_roles
       WHERE user_id = auth.uid()
-        AND role IN ('admin', 'super_admin')
+        AND role = 'admin'::app_role
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.user_roles
       WHERE user_id = auth.uid()
-        AND role IN ('admin', 'super_admin')
+        AND role = 'admin'::app_role
     )
   );
 
