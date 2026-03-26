@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────────────────────────
 # robots.txt — AISA Club Website
-# https://innovationcell.isbmcoe.in
+# https://aisaclub.isbmcoe.in
 # ─────────────────────────────────────────────────────────────────
 
 # All crawlers — allow public site, block admin area
@@ -69,5 +69,6 @@ Disallow: /
 User-agent: anthropic-ai
 Disallow: /
 
-# Sitemap location
-Sitemap: https://innovationcell.isbmcoe.in/sitemap.xml
+# Sitemap locations (both www and non-www)
+Sitemap: https://aisaclub.isbmcoe.in/sitemap.xml
+Sitemap: https://www.aisaclub.isbmcoe.in/sitemap-www.xml
