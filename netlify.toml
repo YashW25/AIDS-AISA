@@ -2,10 +2,15 @@
   publish = "dist"
   command = "npm run build"
 
+[build.environment]
+  NODE_VERSION = "20"
+
+# Edge function for dynamic Open Graph meta tags (for social sharing)
 [[edge_functions]]
   path = "/*"
   function = "og-tags"
 
+# SPA routing — all paths serve index.html so React Router handles navigation
 [[redirects]]
   from = "/*"
   to = "/index.html"
