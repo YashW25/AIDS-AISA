@@ -24,9 +24,9 @@ export const StatsSection = () => {
             <Skeleton className="h-10 w-64 mx-auto mb-4 bg-white/10" />
             <Skeleton className="h-5 w-96 mx-auto bg-white/10" />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="text-center p-6 rounded-2xl bg-primary-foreground/10 backdrop-blur">
+              <div key={i} className="text-center p-6 rounded-2xl bg-primary-foreground/10 backdrop-blur border border-white/25 w-[calc(50%-12px)] md:w-52">
                 <Skeleton className="w-14 h-14 rounded-xl mx-auto mb-4 bg-white/10" />
                 <Skeleton className="h-10 w-20 mx-auto mb-2 bg-white/10" />
                 <Skeleton className="h-4 w-24 mx-auto bg-white/10" />
@@ -51,13 +51,13 @@ export const StatsSection = () => {
             Building a strong community of AI & DS students through meaningful engagement and growth
           </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+        <div className="flex flex-wrap justify-center gap-6 md:gap-8">
           {stats.map((stat, index) => {
             const Icon = iconMap[stat.icon] || Award;
             return (
               <div
                 key={stat.id}
-                className="text-center p-6 rounded-2xl bg-primary-foreground/10 backdrop-blur animate-fade-in"
+                className="text-center p-6 rounded-2xl bg-primary-foreground/10 backdrop-blur border border-white/25 animate-fade-in w-[calc(50%-12px)] md:w-52"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-accent mb-4">
