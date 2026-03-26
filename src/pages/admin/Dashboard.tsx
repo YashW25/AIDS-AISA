@@ -5,6 +5,7 @@ import {
   Menu, X, GraduationCap, Megaphone, ChevronDown, ChevronRight, ImageIcon, 
   Handshake, UserCog, User, BarChart3, ClipboardList, Award, Bell, Download, 
   Newspaper, ScrollText, MessageSquare, Database, BookUser, SendHorizonal, Inbox,
+  FormInput,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,6 +50,7 @@ const sharedNavItems: SideNavItem[] = [
   { label: 'Notice', href: '/admin/dashboard/news', icon: Newspaper },
   { label: 'Downloads', href: '/admin/dashboard/downloads', icon: Download },
   { label: 'Contact Messages', href: '/admin/dashboard/contact', icon: MessageSquare },
+  { label: 'Forms', href: '/admin/dashboard/forms', icon: FormInput },
 ];
 
 // Extra items only for ADMIN

@@ -57,6 +57,10 @@ import DatabaseSetupPage from "./pages/admin/DatabaseSetupPage";
 import ThemeSettingsPage from "./pages/admin/ThemeSettingsPage";
 import MessageAdminPage from "./pages/admin/MessageAdminPage";
 import TeacherMessagesPage from "./pages/admin/TeacherMessagesPage";
+import FormsPage from "./pages/admin/FormsPage";
+import FormBuilderPage from "./pages/admin/FormBuilderPage";
+import FormResponsesPage from "./pages/admin/FormResponsesPage";
+import PublicFormPage from "./pages/PublicFormPage";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +96,7 @@ const App = () => (
                 <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="/event/:eventId/register" element={<EventRegister />} />
                 <Route path="/page/:slug" element={<CustomPage />} />
+                <Route path="/form/:slug" element={<PublicFormPage />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />}>
                   <Route index element={<Overview />} />
                   <Route path="settings" element={<SiteSettingsPage />} />
@@ -122,6 +127,9 @@ const App = () => (
                   <Route path="theme" element={<ThemeSettingsPage />} />
                   <Route path="message-admin" element={<MessageAdminPage />} />
                   <Route path="teacher-messages" element={<TeacherMessagesPage />} />
+                  <Route path="forms" element={<FormsPage />} />
+                  <Route path="forms/builder" element={<FormBuilderPage />} />
+                  <Route path="forms/:id/responses" element={<FormResponsesPage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
