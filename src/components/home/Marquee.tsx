@@ -1,9 +1,12 @@
-import { useAnnouncements } from '@/hooks/useSiteData';
+import { useAnnouncements, useNews } from '@/hooks/useSiteData';
 import { Megaphone } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const Marquee = () => {
-  const { data: announcements, isLoading } = useAnnouncements();
+  const { data: announcements, isLoading: loadingAnn } = useAnnouncements();
+  const { data: marqueeNews, isLoading: loadingNews } = useNews(true);
+
+  const isLoading = loadingAnn || loadingNews;
 
   if (isLoading) {
     return (
@@ -21,10 +24,13 @@ export const Marquee = () => {
     );
   }
 
-  if (!announcements?.length) return null;
+  const annItems = (announcements || []).map((a) => a.content).filter(Boolean);
+  const newsItems = (marqueeNews || []).map((n: any) => n.title).filter(Boolean);
 
-  // Single content — text scrolls in from the right, exits left, then restarts
-  const content = announcements.map(a => a.content).join('   \u2022   ');
+  const combined = [...annItems, ...newsItems];
+  if (!combined.length) return null;
+
+  const content = combined.join('   \u2022   ');
 
   return (
     <div className="gradient-primary text-white overflow-hidden">
