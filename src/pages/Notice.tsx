@@ -49,7 +49,7 @@ const Notice = () => {
               {news.map((notice) => (
                 <div
                   key={notice.id}
-                  className="rounded-xl bg-card border border-border/50 hover:border-primary/50 transition-all group overflow-hidden"
+                  className="rounded-xl bg-card/65 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:bg-card/85 transition-all group overflow-hidden"
                 >
                   <div className="flex flex-col md:flex-row">
                     {notice.image_url && (

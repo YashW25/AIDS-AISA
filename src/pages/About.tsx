@@ -69,14 +69,14 @@ const About = () => {
               </p>
             </div>
             <div className="grid md:grid-cols-2 gap-8 mt-12">
-              <div className="group p-8 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300">
+              <div className="group p-8 rounded-2xl bg-card/65 backdrop-blur-sm border border-border/60 hover:border-primary/40 hover:shadow-xl hover:bg-card/85 transition-all duration-300">
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl gradient-accent mb-6 group-hover:scale-110 transition-transform">
                   <Target className="h-7 w-7 text-accent-foreground" />
                 </div>
                 <h3 className="font-display text-2xl font-bold text-foreground mb-4">Our Mission</h3>
                 <p className="text-muted-foreground leading-relaxed">To foster a vibrant community of students, providing them with opportunities for professional development, technical skill enhancement, and industry exposure.</p>
               </div>
-              <div className="group p-8 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300">
+              <div className="group p-8 rounded-2xl bg-card/65 backdrop-blur-sm border border-border/60 hover:border-primary/40 hover:shadow-xl hover:bg-card/85 transition-all duration-300">
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl gradient-accent mb-6 group-hover:scale-110 transition-transform">
                   <Eye className="h-7 w-7 text-accent-foreground" />
                 </div>
@@ -99,7 +99,7 @@ const About = () => {
               {features.map((feature, index) => {
                 const Icon = iconMap[feature.icon] || Star;
                 return (
-                  <div key={feature.id} className="group p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <div key={feature.id} className="group p-6 rounded-2xl bg-card/65 backdrop-blur-sm border border-border/60 hover:border-primary/40 hover:shadow-lg hover:bg-card/85 transition-all duration-300 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl gradient-accent mb-4 group-hover:scale-110 transition-transform">
                       <Icon className="h-6 w-6 text-accent-foreground" />
                     </div>

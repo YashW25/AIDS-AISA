@@ -26,7 +26,7 @@ export const FeaturesSection = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="p-6 rounded-2xl bg-card border border-border">
+              <div key={i} className="p-6 rounded-2xl bg-card/60 backdrop-blur-sm border border-border/60">
                 <Skeleton className="w-12 h-12 rounded-xl mb-4" />
                 <Skeleton className="h-6 w-32 mb-2" />
                 <Skeleton className="h-4 w-full" />
@@ -58,7 +58,7 @@ export const FeaturesSection = () => {
             return (
               <div
                 key={feature.id}
-                className="group p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 animate-fade-in"
+                className="group p-6 rounded-2xl bg-card/60 backdrop-blur-sm border border-border/60 hover:border-primary/40 hover:shadow-lg hover:bg-card/80 transition-all duration-300 animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl gradient-accent mb-4 group-hover:scale-110 transition-transform">

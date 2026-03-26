@@ -81,7 +81,7 @@ const Downloads = () => {
                 return (
                   <div
                     key={item.id}
-                    className="p-6 rounded-xl bg-card border border-border/50 hover:border-primary/50 transition-all group"
+                    className="p-6 rounded-xl bg-card/65 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:bg-card/85 transition-all group"
                   >
                     <div className="flex items-start gap-4">
                       <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">

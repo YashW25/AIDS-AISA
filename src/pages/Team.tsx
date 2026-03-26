@@ -88,7 +88,7 @@ const Team = () => {
                   {categoryMembers?.map((member, index) => (
                     <article
                       key={member.id}
-                      className="group w-full max-w-sm rounded-2xl bg-gradient-to-b from-card to-card/80 border border-accent/20 hover:border-accent/50 p-8 text-center transition-all duration-500 animate-fade-in hover:shadow-[0_0_30px_-5px_hsl(var(--accent)/0.3)]"
+                      className="group w-full max-w-sm rounded-2xl bg-card/60 backdrop-blur-md border border-accent/20 hover:border-accent/50 p-8 text-center transition-all duration-500 animate-fade-in hover:shadow-[0_0_30px_-5px_hsl(var(--accent)/0.3)] hover:bg-card/80"
                       style={{ animationDelay: `${index * 0.05}s` }}
                     >
                       <div className="relative mb-6 mx-auto w-32 h-32">

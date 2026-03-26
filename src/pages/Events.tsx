@@ -136,7 +136,7 @@ const Events = () => {
               {filteredUpcoming.map((event, index) => (
                 <div
                   key={event.id}
-                  className="group rounded-2xl bg-card border border-border overflow-hidden hover:border-primary/30 hover:shadow-xl transition-all duration-300 animate-fade-in"
+                  className="group rounded-2xl bg-card/65 backdrop-blur-sm border border-border/60 overflow-hidden hover:border-primary/40 hover:shadow-xl hover:bg-card/85 transition-all duration-300 animate-fade-in"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {/* Event Thumbnail */}
@@ -260,7 +260,7 @@ const Events = () => {
                 <Link
                   key={event.id}
                   to={`/event/${event.id}`}
-                  className="group rounded-xl bg-card border border-border overflow-hidden hover:border-border/80 transition-all duration-300 animate-fade-in block"
+                  className="group rounded-xl bg-card/65 backdrop-blur-sm border border-border/60 overflow-hidden hover:border-primary/40 hover:bg-card/85 transition-all duration-300 animate-fade-in block"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
                   {/* Thumbnail */}

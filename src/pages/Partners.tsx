@@ -53,7 +53,7 @@ const Partners = () => {
                   href={partner.website_url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative flex items-center justify-center p-8 rounded-xl bg-card border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10"
+                  className="group relative flex items-center justify-center p-8 rounded-xl bg-card/65 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:bg-card/85 transition-all hover:shadow-lg hover:shadow-primary/10"
                   aria-label={`Visit ${partner.name} website`}
                 >
                   {partner.logo_url ? (

@@ -34,7 +34,7 @@ export const ClubAdvantageSection = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
           {features.map((feature, index) => (
-            <div key={index} className="text-center p-6 rounded-xl bg-background border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg group">
+            <div key={index} className="text-center p-6 rounded-xl bg-background/60 backdrop-blur-sm border border-border/60 hover:border-primary/50 hover:bg-background/80 transition-all duration-300 hover:shadow-lg group">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                 <feature.icon className="w-6 h-6" />
               </div>

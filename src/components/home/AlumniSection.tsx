@@ -69,7 +69,7 @@ export const AlumniSection = () => {
               </div>
 
               {/* Card */}
-              <div className="bg-secondary rounded-2xl pt-14 pb-6 px-6 text-center min-h-[230px] flex flex-col justify-center mt-4">
+              <div className="bg-secondary/80 backdrop-blur-sm rounded-2xl pt-14 pb-6 px-6 text-center min-h-[230px] flex flex-col justify-center mt-4 border border-white/10">
                 <h3 className="text-lg font-bold text-white mb-1">{person.name}</h3>
                 <p className="text-primary/80 text-xs mb-1 uppercase tracking-wide">AI & DS</p>
                 <p className="text-primary/80 text-sm mb-4">Batch: {person.graduation_year}</p>
