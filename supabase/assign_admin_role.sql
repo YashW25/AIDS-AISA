@@ -1,5 +1,6 @@
 -- Run this ONCE in the Supabase SQL Editor to enable admin/teacher creation
 -- from the frontend without needing the Edge Function.
+-- If you ran the previous version, just run this again to replace it.
 
 CREATE OR REPLACE FUNCTION public.assign_admin_role(
   p_user_id   uuid,
@@ -14,12 +15,12 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_db_role text;
+  v_db_role      app_role;
   v_profile_role text;
 BEGIN
-  -- Normalise role
-  v_db_role      := CASE p_role WHEN 'teacher' THEN 'teacher' ELSE 'admin' END;
-  v_profile_role := CASE p_role WHEN 'teacher' THEN 'editor'  ELSE 'admin' END;
+  -- Cast text → app_role enum
+  v_db_role      := CASE p_role WHEN 'teacher' THEN 'teacher'::app_role ELSE 'admin'::app_role END;
+  v_profile_role := CASE p_role WHEN 'teacher' THEN 'editor' ELSE 'admin' END;
 
   -- Upsert into user_roles
   INSERT INTO public.user_roles (user_id, role)
@@ -37,7 +38,7 @@ BEGIN
   -- Upsert into club_admins (only when a club_id is supplied)
   IF p_club_id IS NOT NULL THEN
     INSERT INTO public.club_admins (club_id, user_id, role, is_primary)
-    VALUES (p_club_id, p_user_id, v_db_role, false)
+    VALUES (p_club_id, p_user_id, p_role, false)
     ON CONFLICT (club_id, user_id) DO NOTHING;
   END IF;
 
@@ -46,5 +47,4 @@ END;
 $$;
 
 -- Allow any authenticated user to call this function
--- (the function itself only assigns a role; it doesn't create auth users)
 GRANT EXECUTE ON FUNCTION public.assign_admin_role TO authenticated;
