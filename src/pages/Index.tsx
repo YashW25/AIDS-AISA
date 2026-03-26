@@ -7,11 +7,13 @@ import { PartnersSlider } from '@/components/home/PartnersSlider';
 import { AlumniSection } from '@/components/home/AlumniSection';
 import { CTASection } from '@/components/home/CTASection';
 import { PopupAnnouncement } from '@/components/home/PopupAnnouncement';
+import { NoticePopup } from '@/components/home/NoticePopup';
 
 const Index = () => {
   return (
     <MainLayout>
       <PopupAnnouncement />
+      <NoticePopup />
       <HeroSection />
       <ClubAdvantageSection />
       <StatsSection />

@@ -17,6 +17,32 @@ export type NavItem = {
   children?: NavItem[];
 };
 
+// Built-in items that should always be present in the nav
+// They are auto-seeded into the DB if missing
+const REQUIRED_NAV_ITEMS = [
+  { label: 'Downloads', href: '/downloads', icon: 'Download', position: 90 },
+  { label: 'Notices', href: '/notice', icon: 'Bell', position: 91 },
+];
+
+async function seedMissingNavItems(existingItems: NavItem[]) {
+  const existingHrefs = new Set(existingItems.map((i) => i.href));
+  const missing = REQUIRED_NAV_ITEMS.filter((r) => !existingHrefs.has(r.href));
+  if (!missing.length) return;
+
+  await supabase.from('nav_items').insert(
+    missing.map((m) => ({
+      label: m.label,
+      href: m.href,
+      icon: m.icon,
+      parent_id: null,
+      page_type: 'built_in',
+      custom_page_id: null,
+      position: m.position,
+      is_active: true,
+    }))
+  );
+}
+
 export function useNavItems() {
   return useQuery({
     queryKey: ['nav-items'],
@@ -29,7 +55,23 @@ export function useNavItems() {
         console.error('Error fetching nav items:', error);
         return [] as NavItem[];
       }
-      return data as NavItem[];
+      const items = (data || []) as NavItem[];
+
+      // Silently seed Downloads / Notices if missing, then re-fetch to include them
+      if (items.length > 0) {
+        const existingHrefs = new Set(items.map((i) => i.href));
+        const needsSeed = REQUIRED_NAV_ITEMS.some((r) => !existingHrefs.has(r.href));
+        if (needsSeed) {
+          await seedMissingNavItems(items);
+          const { data: refreshed } = await supabase
+            .from('nav_items')
+            .select('*')
+            .order('position', { ascending: true });
+          return (refreshed || items) as NavItem[];
+        }
+      }
+
+      return items;
     },
   });
 }
@@ -51,7 +93,7 @@ export function useAllNavItems() {
   });
 }
 
-// Default nav items shown when nav_items table is empty (e.g. cloned projects)
+// Default nav items — used only when the nav_items table is completely empty
 const DEFAULT_NAV_ITEMS: NavItem[] = [
   { id: 'def-home', label: 'Home', href: '/', icon: 'Home', parent_id: null, page_type: 'built_in', custom_page_id: null, position: 0, is_active: true, created_at: null, updated_at: null },
   { id: 'def-about', label: 'About', href: '/about', icon: 'Info', parent_id: null, page_type: 'built_in', custom_page_id: null, position: 1, is_active: true, created_at: null, updated_at: null },
@@ -59,6 +101,8 @@ const DEFAULT_NAV_ITEMS: NavItem[] = [
   { id: 'def-team', label: 'Team', href: '/team', icon: 'Users', parent_id: null, page_type: 'built_in', custom_page_id: null, position: 3, is_active: true, created_at: null, updated_at: null },
   { id: 'def-gallery', label: 'Gallery', href: '/gallery', icon: 'Image', parent_id: null, page_type: 'built_in', custom_page_id: null, position: 4, is_active: true, created_at: null, updated_at: null },
   { id: 'def-contact', label: 'Contact', href: '/contact', icon: 'Phone', parent_id: null, page_type: 'built_in', custom_page_id: null, position: 5, is_active: true, created_at: null, updated_at: null },
+  { id: 'def-notice', label: 'Notices', href: '/notice', icon: 'Bell', parent_id: null, page_type: 'built_in', custom_page_id: null, position: 6, is_active: true, created_at: null, updated_at: null },
+  { id: 'def-downloads', label: 'Downloads', href: '/downloads', icon: 'Download', parent_id: null, page_type: 'built_in', custom_page_id: null, position: 7, is_active: true, created_at: null, updated_at: null },
 ];
 
 export function useNavItemsTree() {
@@ -68,10 +112,10 @@ export function useNavItemsTree() {
   const source = items && items.length > 0 ? items : DEFAULT_NAV_ITEMS;
 
   const tree = source
-    .filter((i) => !i.parent_id)
+    .filter((i) => !i.parent_id && i.is_active !== false)
     .map((parent) => ({
       ...parent,
-      children: source.filter((c) => c.parent_id === parent.id),
+      children: source.filter((c) => c.parent_id === parent.id && c.is_active !== false),
     }));
 
   return { data: tree, ...rest };
