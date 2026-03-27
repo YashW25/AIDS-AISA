@@ -11,7 +11,9 @@ import { NoticePopup } from '@/components/home/NoticePopup';
 
 const Index = () => {
   return (
-    <MainLayout>
+    <MainLayout
+      description="Official AISA Club website of ISBM College of Engineering, Pune. Explore upcoming events, notices, gallery, team, downloads, and more."
+    >
       <PopupAnnouncement />
       <NoticePopup />
       <HeroSection />
