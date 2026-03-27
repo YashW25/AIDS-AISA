@@ -6,7 +6,7 @@
 
   <!-- HOMEPAGE -->
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/</loc>
+    <loc>https://www.aisaclub.isbm.co.in/</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
@@ -14,21 +14,21 @@
 
   <!-- HIGH-TRAFFIC DYNAMIC PAGES -->
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/events</loc>
+    <loc>https://www.aisaclub.isbm.co.in/events</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
 
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/notice</loc>
+    <loc>https://www.aisaclub.isbm.co.in/notice</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
 
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/gallery</loc>
+    <loc>https://www.aisaclub.isbm.co.in/gallery</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
@@ -36,21 +36,21 @@
 
   <!-- CORE PAGES -->
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/about</loc>
+    <loc>https://www.aisaclub.isbm.co.in/about</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
 
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/team</loc>
+    <loc>https://www.aisaclub.isbm.co.in/team</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
   </url>
 
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/contact</loc>
+    <loc>https://www.aisaclub.isbm.co.in/contact</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
@@ -58,28 +58,28 @@
 
   <!-- SUPPORTING PAGES -->
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/downloads</loc>
+    <loc>https://www.aisaclub.isbm.co.in/downloads</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.75</priority>
   </url>
 
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/certificates</loc>
+    <loc>https://www.aisaclub.isbm.co.in/certificates</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.70</priority>
   </url>
 
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/partners</loc>
+    <loc>https://www.aisaclub.isbm.co.in/partners</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.70</priority>
   </url>
 
   <url>
-    <loc>https://www.aisaclub.isbmcoe.in/charter</loc>
+    <loc>https://www.aisaclub.isbm.co.in/charter</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.60</priority>

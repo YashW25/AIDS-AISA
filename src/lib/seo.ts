@@ -2,7 +2,7 @@ export const SEO_CONFIG = {
     defaultTitle: 'AISA Club | AI&DS Department, Pune',
     titleTemplate: '%s | AISA Club - ISBM COE',
     description: 'AISA Club at AI&DS Department, Pune fosters student innovation, research, startups, and entrepreneurship through mentorship and incubation support.',
-    siteUrl: 'https://aisaclub.isbmcoe.in',
+    siteUrl: 'https://aisaclub.isbm.co.in',
     siteName: 'AISA Club - ISBM COE',
     twitterHandle: '@isbm_pune', // Replace with actual handle if available
     defaultImage: '/og-image.png',

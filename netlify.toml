@@ -10,10 +10,17 @@
   path = "/*"
   function = "og-tags"
 
+# Netlify subdomain → custom domain (301 permanent)
+[[redirects]]
+  from = "https://aisa-isbm-coe.netlify.app/*"
+  to = "https://aisaclub.isbm.co.in/:splat"
+  status = 301
+  force = true
+
 # www → non-www canonical redirect (301 permanent)
 [[redirects]]
-  from = "https://www.aisaclub.isbmcoe.in/*"
-  to = "https://aisaclub.isbmcoe.in/:splat"
+  from = "https://www.aisaclub.isbm.co.in/*"
+  to = "https://aisaclub.isbm.co.in/:splat"
   status = 301
   force = true
 
