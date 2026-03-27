@@ -1,6 +1,5 @@
 import type { Context } from "https://edge.netlify.com";
 
-// Bot user agents that need pre-rendered meta tags
 const BOT_AGENTS = [
   'facebookexternalhit',
   'Facebot',
@@ -24,70 +23,67 @@ function isBot(userAgent: string): boolean {
 
 export default async function handler(request: Request, context: Context) {
   const userAgent = request.headers.get('user-agent') || '';
-  
-  // Only intercept for bots/crawlers
+
   if (!isBot(userAgent)) {
     return context.next();
   }
 
   const url = new URL(request.url);
   const hostname = url.hostname;
-  
-  // Fetch club metadata from Supabase edge function
-  const supabaseUrl = Deno.env.get('VITE_SUPABASE_URL') || Deno.env.get('SUPABASE_URL');
-  
+  const origin = url.origin;
+
+  // Correct AISA Club defaults — used when Supabase fetch is unavailable
   let metadata = {
-    title: 'Student Club Portal',
-    description: 'Empowering future leaders through innovation and excellence',
-    image: `${url.origin}/og-image.png`,
-    url: url.origin,
-    siteName: 'Student Club Portal',
+    title: 'AISA Club | ISBM College of Engineering, Pune',
+    description: 'Official AISA Club website of ISBM College of Engineering, Pune. Explore upcoming events, notices, gallery, team, downloads, and more.',
+    image: `${origin}/preview.png`,
+    url: origin,
+    siteName: 'AISA Club — ISBM College of Engineering',
   };
 
   try {
+    const supabaseUrl = Deno.env.get('VITE_SUPABASE_URL') || Deno.env.get('SUPABASE_URL');
     if (supabaseUrl) {
       const response = await fetch(`${supabaseUrl}/functions/v1/og-metadata?domain=${hostname}`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(3000),
       });
-      
+
       if (response.ok) {
         const data = await response.json();
-        metadata = {
-          title: data.title || metadata.title,
-          description: data.description || metadata.description,
-          image: data.image || metadata.image,
-          url: data.url || metadata.url,
-          siteName: data.siteName || metadata.siteName,
-        };
+        if (data.title && data.title !== 'Student Club Portal') {
+          metadata = {
+            title: data.title || metadata.title,
+            description: data.description || metadata.description,
+            image: data.image ? data.image.replace('/og-image.png', '/preview.png') : metadata.image,
+            url: data.url || metadata.url,
+            siteName: data.siteName || metadata.siteName,
+          };
+        }
       }
     }
-  } catch (error) {
-    console.error('Failed to fetch club metadata:', error);
+  } catch (_) {
+    // Use defaults defined above
   }
 
-  // Get the original response
   const response = await context.next();
   const html = await response.text();
 
-  // Replace meta tags with dynamic club-specific values
   const modifiedHtml = html
     .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(metadata.title)}</title>`)
     .replace(/<meta name="description" content="[^"]*"/, `<meta name="description" content="${escapeHtml(metadata.description)}"`)
     .replace(/<meta property="og:title" content="[^"]*"/, `<meta property="og:title" content="${escapeHtml(metadata.title)}"`)
     .replace(/<meta property="og:description" content="[^"]*"/, `<meta property="og:description" content="${escapeHtml(metadata.description)}"`)
     .replace(/<meta property="og:image" content="[^"]*"/, `<meta property="og:image" content="${escapeHtml(metadata.image)}"`)
+    .replace(/<meta property="og:image:secure_url" content="[^"]*"/, `<meta property="og:image:secure_url" content="${escapeHtml(metadata.image)}"`)
     .replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${escapeHtml(metadata.url)}"`)
     .replace(/<meta property="og:site_name" content="[^"]*"/, `<meta property="og:site_name" content="${escapeHtml(metadata.siteName)}"`)
     .replace(/<meta name="twitter:title" content="[^"]*"/, `<meta name="twitter:title" content="${escapeHtml(metadata.title)}"`)
     .replace(/<meta name="twitter:description" content="[^"]*"/, `<meta name="twitter:description" content="${escapeHtml(metadata.description)}"`)
     .replace(/<meta name="twitter:image" content="[^"]*"/, `<meta name="twitter:image" content="${escapeHtml(metadata.image)}"`)
-    // Add missing meta tags if not present
     .replace('</head>', `
-    <meta property="og:url" content="${escapeHtml(metadata.url)}" />
-    <meta property="og:site_name" content="${escapeHtml(metadata.siteName)}" />
-    <link rel="canonical" href="${escapeHtml(metadata.url)}" />
+    <meta property="og:image:width" content="1909" />
+    <meta property="og:image:height" content="963" />
     </head>`);
 
   return new Response(modifiedHtml, {
